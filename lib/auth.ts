@@ -1,4 +1,7 @@
+
 import { betterAuth } from 'better-auth'
+import {admin} from 'better-auth/plugins'
+import { nextCookies } from "better-auth/next-js";
 import { prismaAdapter } from 'better-auth/adapters/prisma'
 import prisma from '@/lib/prisma'
 
@@ -7,7 +10,12 @@ export const auth = betterAuth({
     provider: 'sqlite',
   }),
   emailAndPassword:{
-    enabled:true
+    enabled:true,
+    requireEmailVerification:false,
+    autoSignIn:false,
   },
-  // plugins:[]
+  session:{
+    expiresIn:60 * 60
+  },
+  plugins:[admin(),nextCookies()]
 })
