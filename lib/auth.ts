@@ -15,7 +15,7 @@ export const auth = betterAuth({
     autoSignIn:false,
   },
   session:{
-    expiresIn:60 * 60
+    expiresIn:60 * 60 * 24
   },
   plugins:[admin(),nextCookies()]
 })

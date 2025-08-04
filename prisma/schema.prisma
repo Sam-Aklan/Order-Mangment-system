@@ -98,6 +98,10 @@ model OrderItem {
   product   Product  @relation(fields: [productId], references: [id])
   productId String
   quantity  Int      @default(1)
+
+   @@unique([orderId, productId], name: "order_product_unique")
+
+   @@index([orderId, productId])
 }
 
 enum Status {

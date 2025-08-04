@@ -1,14 +1,14 @@
 "use client";
 
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { ChangeEvent, useState } from "react";
 
 export function OrderFilters({
   initialQuery,
   initialStatus,
 }: {
-  initialQuery: string;
-  initialStatus: string;
+  initialQuery?: string;
+  initialStatus?: string;
 }) {
   const router = useRouter();
   const [query, setQuery] = useState(initialQuery);
@@ -16,9 +16,11 @@ export function OrderFilters({
 
   const submitFilters = () => {
     const params = new URLSearchParams();
-    if (query) params.set("q", query);
-    if (status) params.set("status", status);
-    router.push(`/orders?${params.toString()}`);
+    if (query && query.trim() !=="") params.set("q", query);
+    if (status && status.trim() !=="") params.set("status", status);
+    
+    
+    router.push(`/dashboard/order?${params.toString()}`);
   };
 
  const searchHandler = (e:ChangeEvent<HTMLInputElement>)=>{
@@ -35,7 +37,7 @@ const statusHandler = (e: ChangeEvent<HTMLSelectElement>)=>{
         type="text"
         placeholder="Search by product or customer"
         value={query}
-        onChange={(e) => setQuery(e.target.value)}
+        onChange={searchHandler}
         className="p-2 border rounded w-64"
       />
 
