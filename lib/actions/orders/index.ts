@@ -4,36 +4,69 @@ import { auth } from "@/lib/auth";
 import prisma from "@/lib/prisma";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
+import { categoryType } from "../products";
 
-export async function createOrder(formData: FormData) {
-  const user =await auth.api.getSession({headers: await headers()})
-  const productIds = formData.getAll("productIds") as string[];
-  const quantities = formData.getAll("quantities") as string[];
-  const customerId = formData.get("customerId") as string;
+type CreateOrderPayload = {
+  customerId: string;
+  products: { id: string; quantity: number; price: number }[];
+  total: number;
+};
 
-  if (!productIds.length || !customerId || !user?.user) {
+export async function createOrder(payload: CreateOrderPayload) {
+  const user = await auth.api.getSession({ headers: await headers() });
+
+  if (!payload.customerId || !payload.products.length || !user?.user) {
     throw new Error("Missing required fields.");
   }
 
-  const items = productIds.map((productId, index) => ({
-    productId,
-    quantity: parseInt(quantities[index], 10) || 1,
-  }));
-
-  const order = await prisma.order.create({
-    data: {
-      status: "PENDING",
-      customerId,
-      userId: user.user.id,
-      items: {
-        create: items.map((item) => ({
-          productId: item.productId,
-          quantity: item.quantity,
-        })),
-      },
-    },
+  // Validate product stock before proceeding
+  const productRecords = await prisma.product.findMany({
+    where: { id: { in: payload.products.map((p) => p.id) } },
+    select: { id: true, stock: true },
   });
-  redirect('/dashboard/order')
+
+  const stockMap = Object.fromEntries(
+    productRecords.map((p) => [p.id, p.stock])
+  );
+
+  for (const item of payload.products) {
+    if (item.quantity > (stockMap[item.id] ?? 0)) {
+      throw new Error(`Insufficient stock for product ID ${item.id}`);
+    }
+  }
+
+  // Transaction: create order + deduct stock
+  await prisma.$transaction(async (tx) => {
+    await tx.order.create({
+      data: {
+        status: "PENDING",
+        customerId: payload.customerId,
+        userId: user.user.id,
+        items: {
+          create: payload.products.map((item) => ({
+            productId: item.id,
+            quantity: item.quantity,
+            price: item.price,
+          })),
+        },
+        
+      },
+    });
+
+    // Deduct stock for each product
+    for (const item of payload.products) {
+      await tx.product.update({
+        where: { id: item.id },
+        data: {
+          stock: {
+            decrement: item.quantity,
+          },
+        },
+      });
+    }
+  });
+
+  redirect("/dashboard/orders");
 }
 
 export async function getOrders(
@@ -66,7 +99,7 @@ export async function getOrders(
         {
         id:true,
         quantity:true,
-        product:{select:{id:true,name:true,price:true,stock:true}}
+        product:{select:{id:true,name:true,price:true,stock:true,category:true}}
       }}
     },
     orderBy:{createdAt:"desc"},
@@ -102,7 +135,7 @@ export async function getOrder(orderId:string):Promise<orderType|null> {
       {
       id:true,
       quantity:true,
-      product:{select:{id:true,name:true,price:true,stock:true}}
+      product:{select:{id:true,name:true,price:true,stock:true,category:true}}
     }}
   },
   })
@@ -140,14 +173,7 @@ export async function updateOrder(formData: FormData) {
    const toUpdate:{productId:string, quantity:number}[]=[]
    const toDelete: string[] = []
 
-   // Determine what to do with each submitted product
-
-  //  console.log("old and new products")
-  //  console.log("order id", orderId)
-  //  console.table(quantities)
-  //  console.log(existingMap)
-  //  console.log(existingItems)
-   
+ 
    for(const [productId, newQty] of Object.entries(quantities)){
     const existingQty = existingMap[productId];
     if(newQty === 0 && existingQty !==undefined){
@@ -243,7 +269,8 @@ export type orderType = {
             name: string;
             id: string;
             price: number;
-            stock:number
+            stock:number;
+            category:categoryType
         };
         quantity: number;
         id:string

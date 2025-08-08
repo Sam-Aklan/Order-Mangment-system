@@ -70,6 +70,7 @@ model Product {
   name    String
   price   Float
   stock   Int
+  category ProductCategory @default(OTHER)
   items   OrderItem[]
 }
 
@@ -108,4 +109,13 @@ enum Status {
   PENDING
   SHIPPED
   DELIVERED
+}
+
+enum ProductCategory {
+  ELECTRONICS
+  CLOTHING
+  FOOD
+  BOOKS
+  FURNITURE
+  OTHER
 }

@@ -32,7 +32,7 @@ const {q,status} = await searchParams
 
 console.log("qeury params", q, status)
 
-const {orders} = await getOrders("ADMIN", session?.user.id,1,3,status as "PENDING"|"DELIVERED"|"SHIPPED"|undefined,q)
+const {orders,} = await getOrders("ADMIN", session?.user.id,1,3,status as "PENDING"|"DELIVERED"|"SHIPPED"|undefined,q)
  return (
   <div className="max-w-4xl mx-auto mt-10">
     <OrderFilters initialQuery={q ||""} initialStatus={status||""}/>
