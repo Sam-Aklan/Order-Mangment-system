@@ -82,7 +82,7 @@ export default function ProductList({
               </div>
             </div>
             <Link
-              href={`/products/${product.id}`}
+              href={`/dashboard/products/${product.id}`}
               className="text-blue-600 hover:underline text-sm self-center"
             >
               View

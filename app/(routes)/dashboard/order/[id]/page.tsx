@@ -14,7 +14,7 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
   const products:productType[] = order.items.map(item=>item.product)
 
   return (
-    <div className="max-w-2xl mx-auto mt-10 space-y-6">
+    <div className="max-w-2xl md:max-w-3xl lg:max-w-4xl mx-auto mt-10 space-y-6">
       <h1 className="text-2xl font-bold">Edit Order</h1>
       <EditOrderForm
         order={order}

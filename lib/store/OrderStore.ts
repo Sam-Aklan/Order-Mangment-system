@@ -5,43 +5,69 @@ type ItemSelection = {
   quantity: number;
   price: number;
   itemName:string;
+  category:string;
+  stock:number;
+  isNew?:boolean
 };
- type CustomerSelection ={
-    id:string,
-    name:string,
- }
+ 
 type OrderStore = {
-  customer:CustomerSelection|null;
+  customerId:string|null;
   selectedItems: Record<string, ItemSelection>;
-  setProductQuantity: (id: string, quantity: number, price: number,itemName:string) => void;
+  setProductQuantity: (
+    id: string,
+    quantity: number,
+    price: number,
+    itemName: string,
+    stock:number,
+    category:string,
+    isNew?: boolean
+  ) => void;
   removeProduct: (id: string) => void;
   clearOrder: () => void;
   totalPrice: () => number;
-  setCustomer:(id:string,name:string)=>void;
+  setCustomer:(id:string)=>void;
   getOrderPayload: () => {
     customerId: string | null;
     products: ItemSelection[];
     total: number;
   };
+
+  // For editing
+  initializeOrder: (
+    customerId: string,
+    items: ItemSelection[]
+  ) => void;
 };
 
 export const useOrderStore = create<OrderStore>((set, get) => ({
 
   selectedItems: {},
-  customer:null,
+  customerId:null,
 
-  setProductQuantity: (id, quantity, price,itemName) => {
+  setProductQuantity: (id, quantity, price, itemName, stock,category,isNew = false) => {
     set((state) => {
-      if (quantity <= 0) {
+      // Case 1: Remove if new and quantity <= 0
+      if (isNew && quantity <= 0) {
         const updated = { ...state.selectedItems };
         delete updated[id];
         return { selectedItems: updated };
       }
 
+      // Case 2: Existing → keep with quantity = 0
+      if (!isNew && quantity <= 0) {
+        return {
+          selectedItems: {
+            ...state.selectedItems,
+            [id]: { id, quantity: 0, price, itemName, isNew,stock,category },
+          },
+        };
+      }
+
+      // Case 3: Normal update
       return {
         selectedItems: {
           ...state.selectedItems,
-          [id]: { id, quantity, price,itemName },
+          [id]: { id, quantity, price, itemName, isNew,stock,category },
         },
       };
     });
@@ -49,8 +75,16 @@ export const useOrderStore = create<OrderStore>((set, get) => ({
 
   removeProduct: (id) => {
     set((state) => {
+      const item = state.selectedItems[id];
       const updated = { ...state.selectedItems };
-      delete updated[id];
+
+      if (item?.isNew) {
+        // remove completely
+        delete updated[id];
+      } else if (item) {
+        // keep but mark as deleted
+        updated[id] = { ...item, quantity: 0 };
+      }
       return { selectedItems: updated };
     });
   },
@@ -62,14 +96,23 @@ export const useOrderStore = create<OrderStore>((set, get) => ({
       (sum, item) => sum + item.price * item.quantity,
       0
     ),
-setCustomer(id, name) {
+setCustomer(id) {
     set(()=>{
-       return {customer:{id,name}}
+       return {customerId:id}
     })
 },
 getOrderPayload:()=>({
-    customerId: get().customer?.id||null,
+    customerId: get().customerId||null,
     products: Object.values(get().selectedItems),
     total: get().totalPrice()
-})
+}),
+initializeOrder:(customerId,items)=>set(
+  {
+    customerId,
+    selectedItems:items.reduce((acc,item)=>{
+      acc[item.id]=item
+      return acc
+    },{} as Record<string, ItemSelection>)
+  }
+)
 }));

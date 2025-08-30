@@ -1,4 +1,4 @@
-import { categoryType, createProduct, getProductsQuery } from "@/lib/actions/products";
+import { categoryType, createProduct, getProductsQuery, updateProduct } from "@/lib/actions/products";
 import { NextResponse,NextRequest } from "next/server";
 
 export async function GET(req: NextRequest) {
@@ -34,3 +34,31 @@ export async function POST(request: Request) {
     );
   }
 }
+
+
+export async function PUT(request: Request,{params}:{params:Promise<{id:string}>}) {
+  try {
+    const body = await request.json();
+    const {id} = await params
+    const result = await updateProduct(id, {
+      name: body.name,
+      price: body.price,
+      category: body.category,
+      stock: body.stock,
+      imageUrl: body.imageUrl ?? null,
+      imagePublicId: body.imagePublicId ?? null,
+      deleteOldImage: body.deleteOldImage ?? false,
+    });
+
+    if (!result.success) {
+      return NextResponse.json({ error: result.error }, { status: 400 });
+    }
+
+    return NextResponse.json({ success: true });
+  } catch (err) {
+    console.error(err);
+    return NextResponse.json({ error: "Server error" }, { status: 500 });
+  }
+}
+
+

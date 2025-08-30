@@ -5,6 +5,7 @@ import { ChangeEvent, useRef, useState } from "react";
 import { categoryType } from "@/lib/actions/products";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
+import { productSchema } from "@/lib/validations/productValidation";
 
 export default function ProductForm({ 
   onClose,
@@ -47,38 +48,106 @@ export default function ProductForm({
     }
   };
 
+  const uploadToCloudinary = async (file: File): Promise<{url: string, publicId: string}> => {
+    const url = `https://api.cloudinary.com/v1_1/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME}/upload`;
+    const data = new FormData();
+    data.append("file", file);
+    data.append("upload_preset", process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET || "");
+
+    const res = await fetch(url, {
+      method: "POST",
+      body: data,
+    });
+
+    console.table({
+      name:process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME,
+      preset:process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET
+    })
+
+    if (!res.ok) throw new Error("Cloudinary upload failed");
+    const result = await res.json();
+  return {
+    url: result.secure_url as string,
+    publicId: result.public_id as string,
+  };
+  };
+
+  const deleteFromCloudinary = async (publicId: string) => {
+    await fetch(`/api/cloudinary/${publicId}`, {
+      method: "DELETE",
+      headers: { "Content-Type": "application/json" },
+      // body: JSON.stringify({ publicId }),
+    });
+  };
+  
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
-    
-    try {
-      const response = await fetch('/api/product', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          name: formData.name,
-          price: parseFloat(formData.price),
-          category: formData.category,
-          stock: formData.stock
-        }),
-      });
+    setUploadProgress(0)
 
-      if (!response.ok) throw new Error('Failed to create product');
-      
-      const params = new URLSearchParams();
-      params.set("q", formData.name);
-      params.set("category", formData.category);
-      params.set("minPrice", String(formData.price));
-   
-      params.set("page", "1");
-      
-      router.push(`/dashboard/products?${params.toString()}`);
-      router.refresh();
-      onClose();
-    } catch (error) {
-      console.error("Error creating product:", error);
+    let uploaded: {url: string, publicId: string} | null = null;
+
+    try {
+      const parsed = productSchema.safeParse({
+        name: formData.name,
+        price: parseFloat(formData.price),
+        category: formData.category,
+        stock: parseInt(formData.stock, 10),
+        image: formData.image, // File or null
+      });
+      if (!parsed.success) {
+        setIsSubmitting(false);
+        // Collect all error messages
+        const errors = parsed.error.issues.map((i) => i.message).join(", ");
+        alert(errors);
+        return;
+      }
+      if (parsed.data.image) {
+        uploaded = await uploadToCloudinary(parsed.data.image);
+        // console.table(uploaded)
+      }
+  
+      throw new Error("test delete")
+
+      // const response = await fetch("/api/product", {
+      //   method: "POST",
+      //   headers: { "Content-Type": "application/json" },
+      //   body: JSON.stringify({
+      //     name: parsed.data.name,
+      //     price: parsed.data.price,
+      //     category: parsed.data.category,
+      //     stock: parsed.data.stock,
+      //     imageUrl: uploaded?.url || null,
+      //     imagePublicId: uploaded?.publicId || null, 
+      //   }),
+      // });
+  
+      // if (!response.ok) {
+      //   throw new Error("Failed to create product in DB");
+      // }
+  
+     
+      // // Redirect with filters
+      // const params = new URLSearchParams();
+      // params.set("q", formData.name);
+      // params.set("category", formData.category);
+      // params.set("minPrice", String(formData.price));
+      // params.set("page", "1");
+
+      // router.push(`/dashboard/products?${params.toString()}`);
+      // router.refresh();
+      // onClose();
+  
+    } catch (err) {
+      console.error("Error creating product:", err);
+  
+      // ❌ cleanup orphaned Cloudinary upload
+      if (uploaded?.publicId) {
+        await deleteFromCloudinary(uploaded.publicId);
+      }
+
+      // await deleteFromCloudinary("hello-there")
     } finally {
       setIsSubmitting(false);
     }
@@ -158,7 +227,7 @@ export default function ProductForm({
               className="w-full p-2 border rounded"
               value={formData.name}
               onChange={(e) => setFormData({...formData, name: e.target.value})}
-              required
+              // required
             />
           </div>
           <div>
@@ -169,7 +238,7 @@ export default function ProductForm({
               className="w-full p-2 border rounded"
               value={formData.price}
               onChange={(e) => setFormData({...formData, price: e.target.value})}
-              required
+              // required
             />
           </div>
           <div>
@@ -178,12 +247,13 @@ export default function ProductForm({
               className="w-full p-2 border rounded"
               value={formData.category}
               onChange={(e) => setFormData({...formData, category: e.target.value as categoryType})}
-              required
+              // required
             >
               <option value="">Select Category</option>
               <option value="ELECTRONICS">ELECTRONICS</option>
               <option value="FOOD">Food</option>
               <option value="BOOKS">Books</option>
+              <option value="CLOTHING">Clothing</option>
               <option value="FURNITURE">Furniture</option>
               <option value="OTHER">Other</option>
             </select>

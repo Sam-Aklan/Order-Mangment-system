@@ -6,6 +6,7 @@ import { useMemo, useState, useTransition } from "react";
 import Modal from "../Modal";
 import { useRouter } from "next/navigation";
 import { useOrderStore } from "@/lib/store/OrderStore";
+import { orderSchema } from "@/lib/validations/orderValidation";
 
 type createOrderType = {
     products: productType[],
@@ -25,24 +26,24 @@ function ClientOrderForm({ products, customers,searchParams,page,totalPages}: cr
 
   const [previewOpen, setPreviewOpen] = useState(false);
   const [isPending, startTransition] = useTransition();
+  const [error, setError] = useState<string | null>(null);
   const {
     selectedItems,
     setProductQuantity,
     removeProduct,
     clearOrder,
     setCustomer,
-    totalPrice,
   getOrderPayload
   }=useOrderStore()
 
-  const handleQuantityChange = (productId: string, quantity: number, stock: number, price: number,name:string) => {
+  const handleQuantityChange = (productId: string, quantity: number, stock: number, price: number,name:string,category:string) => {
     if (quantity > stock) quantity = stock;
     if (quantity < 1) {
       removeProduct(productId)
       return
     }
 
-    setProductQuantity(productId, quantity, price,name);
+    setProductQuantity(productId, quantity,price,name,stock,category,true);
   };
 
   const total = useMemo(() => {
@@ -50,7 +51,7 @@ function ClientOrderForm({ products, customers,searchParams,page,totalPages}: cr
       
       return  sum + price * quantity ;
     }, 0);
-  }, [selectedItems, products]);
+  }, [selectedItems]);
 
   const isEmpty = Object.keys(selectedItems).length === 0;
 
@@ -69,25 +70,34 @@ function ClientOrderForm({ products, customers,searchParams,page,totalPages}: cr
   };
   
   const handleSubmission = ()=>{
-    const {customerId,products,total}=getOrderPayload()
+    setError(null)
+
+    const payload=getOrderPayload()
+    console.table(payload)
+    const result = orderSchema.safeParse(payload)
+    if(!result.success){
+      setError(result.error.issues[0].message + "*** " + result.error.issues[0].path)
+      return
+    }
+    console.table(result.data)
     startTransition(async () => {
       await createOrder({
-        customerId:customerId,
-        products: products,
-        total,
+        customerId:result.data.customerId,
+        products: result.data.products,
+        total:result.data.total,
       });
       clearOrder();
     });
   }
     return (
       <>
-      <form action={createOrder} className="space-y-4 max-w-6xl mx-auto mt-10">
+      <div className="space-y-4 max-w-6xl mx-auto mt-10">
         <h2 className="text-2xl font-semibold">Create Order</h2>
   
         <div>
           <label className="block font-medium mb-1">Customer</label>
           <select name="customerId" className="w-full border rounded p-2"
-          onChange={(e)=>setCustomer(e.target.value,e.target.name)}>
+          onChange={(e)=>setCustomer(e.target.value)}>
             <option value="">Select customer...</option>
             {customers.map((c: any) => (
               <option key={c.id} value={c.id}>
@@ -119,7 +129,7 @@ function ClientOrderForm({ products, customers,searchParams,page,totalPages}: cr
               <div className="mt-4 flex items-center gap-2">
                 <button
                   type="button"
-                  onClick={() => handleQuantityChange(product.id,qty - 1,product.stock,product.price,product.name)}
+                  onClick={() => handleQuantityChange(product.id,qty-1,product.stock,product.price,product.name,product.category)}
                   className="px-2 py-1 bg-gray-200 rounded disabled:opacity-50"
                   disabled={qty === 0}
                 >
@@ -128,7 +138,7 @@ function ClientOrderForm({ products, customers,searchParams,page,totalPages}: cr
                 <span className="min-w-[2rem] text-center">{qty}</span>
                 <button
                   type="button"
-                  onClick={() => handleQuantityChange(product.id, qty + 1, product.stock, product.price,product.name)}
+                  onClick={() => handleQuantityChange(product.id,qty+1,product.stock,product.price,product.name,product.category)}
                   className="px-2 py-1 bg-gray-200 rounded disabled:opacity-50"
                   disabled={qty >= product.stock}
                 >
@@ -182,6 +192,11 @@ function ClientOrderForm({ products, customers,searchParams,page,totalPages}: cr
         title="Order Preview"
       >
         <div className="space-y-2 max-h-[400px] overflow-y-auto">
+        {error && (
+            <div className="text-red-500 text-sm bg-red-50 p-2 rounded">
+              {error}
+            </div>
+          )}
           {
             Object.entries(selectedItems).map(([id,{quantity,itemName,price}])=>    <div key={id} className="flex justify-between text-sm">
             <span>
@@ -198,14 +213,23 @@ function ClientOrderForm({ products, customers,searchParams,page,totalPages}: cr
           <span>${total.toFixed(2)}</span>
         </div>
 
-        <button
-          type="submit"
-          className="mt-4 w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700"
-        >
-          Submit Order
-        </button>
+        <div className="flex justify-end gap-2 mt-4">
+            <button
+              onClick={() => setPreviewOpen(false)}
+              className="px-3 py-1 bg-gray-300 rounded hover:bg-gray-400"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={handleSubmission}
+              disabled={isPending}
+              className="px-3 py-1 bg-green-500 text-white rounded hover:bg-green-600 disabled:opacity-50"
+            >
+              {isPending ? "Submitting..." : "Confirm Order"}
+            </button>
+          </div>
       </Modal>
-      </form>
+      </div>
       <div className="flex justify-between pt-2">
         <button
           onClick={() => handlePageChange(page - 1)}

@@ -5,6 +5,7 @@ import prisma from "@/lib/prisma";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { categoryType } from "../products";
+import {updateOrderSchema} from '@/lib/validations/orderValidation'
 
 type CreateOrderPayload = {
   customerId: string;
@@ -46,7 +47,7 @@ export async function createOrder(payload: CreateOrderPayload) {
           create: payload.products.map((item) => ({
             productId: item.id,
             quantity: item.quantity,
-            price: item.price,
+            
           })),
         },
         
@@ -66,7 +67,7 @@ export async function createOrder(payload: CreateOrderPayload) {
     }
   });
 
-  redirect("/dashboard/orders");
+  redirect("/dashboard/order");
 }
 
 export async function getOrders(
@@ -142,22 +143,35 @@ export async function getOrder(orderId:string):Promise<orderType|null> {
   
 }
 
-export async function updateOrder(formData: FormData) {
-  const orderId = formData.get("orderId") as string;
-  const customerId = formData.get("customerId") as string;
-  const status = formData.get("status") as string;
+type UpdateOrderInput = {
+  orderId: string;
+  customerId: string;
+  status: string;
+  items: { productId: string; quantity: number }[];
+};
 
-   // Extract quantities from form
-   const quantities: Record<string,number> = {};
-   for(const [key, value] of formData.entries()){
-    if(key.startsWith("quantity-")){
-      const productId = key.replace("quantity-","")
-      const quantity = parseInt(value as string);
-      if(!isNaN(quantity)){
-        quantities[productId] = quantity
-      }
-    }
-   }
+export async function updateOrder(data: UpdateOrderInput) {
+  const { items } = data;
+ // Extract quantities from form
+ const quantities = Object.fromEntries(
+  items.map((i) => [i.productId, i.quantity])
+);
+
+ const payload = {
+  orderId:data.orderId,
+  customerId:data.customerId,
+  status:data.status,
+  quantities,
+};
+
+const result = updateOrderSchema.safeParse(payload);
+if (!result.success) {
+  console.error(result.error.format());
+  return { success: false, error: "unprocessable input" };
+}
+
+const { orderId, customerId, status } = result.data;
+
   
    // Get existing order items
 
@@ -206,45 +220,64 @@ export async function updateOrder(formData: FormData) {
     })
   );
 
-  // Delete
-  if (toDelete.length > 0) {
+  // Handle deletes (and restore stock)
+  for (const productId of toDelete) {
+    const deletedQty = existingMap[productId] || 0;
+
     tx.push(
-      prisma.orderItem.deleteMany({
+      prisma.orderItem.delete({
         where: {
-          orderId,
-          productId: { in: toDelete },
+          order_product_unique: { orderId, productId },
         },
       })
     );
+
+    if (deletedQty > 0) {
+      tx.push(
+        prisma.product.update({
+          where: { id: productId },
+          data: { stock: { increment: deletedQty } },
+        })
+      );
+    }
   }
 
-  // Update quantities
-  for (const item of toUpdate) {
+  // Handle updates (and adjust stock diff)
+  for (const { productId, quantity } of toUpdate) {
+    const oldQty = existingMap[productId] || 0;
+    const diff = quantity - oldQty;
+
     tx.push(
       prisma.orderItem.update({
         where: {
-          order_product_unique:{
-            orderId:orderId,
-            productId:item.productId
-          }
+          order_product_unique: { orderId, productId },
         },
-        data: {
-          quantity: item.quantity,
-        },
+        data: { quantity },
       })
     );
+
+    if (diff !== 0) {
+      tx.push(
+        prisma.product.update({
+          where: { id: productId },
+          data: { stock: { decrement: diff } },
+        })
+      );
+    }
   }
 
-  console.log("to create",toCreate)
-
-  // Create new
-  if (toCreate.length > 0) {
+  // Handle creates (and deduct stock)
+  for (const { productId, quantity } of toCreate) {
     tx.push(
-      prisma.orderItem.createMany({
-        data: toCreate.map((item) => ({
-          orderId,
-          ...item,
-        })),
+      prisma.orderItem.create({
+        data: { orderId, productId, quantity },
+      })
+    );
+
+    tx.push(
+      prisma.product.update({
+        where: { id: productId },
+        data: { stock: { decrement: quantity } },
       })
     );
   }

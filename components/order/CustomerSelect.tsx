@@ -68,7 +68,7 @@ export default function CustomerSelect({ value, onChange }: Props) {
 
       <button
         type="button"
-        onClick={() => setOpen(!open)}
+        onClick={() => setOpen(open=>!open)}
         className="w-full border rounded px-3 py-2 text-left"
       >
         {customers.find((c) => c.id === value)?.name || "Select Customer"}
