@@ -1,11 +1,11 @@
 "use client";
 
-import Link from "next/link";
 import { productType } from "@/lib/actions/products";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import ProductForm from "./ProductForm";
 import Modal from "../Modal";
+import ProductView from "./ProductView";
 
 interface productsListProps {
   products: productType[];
@@ -26,7 +26,6 @@ export default function ProductList({
   totalPages,
 }: productsListProps) {
   const router = useRouter();
-  const [showAddForm, setShowAddForm] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const handlePageChange = (newPage: number) => {
     const params = new URLSearchParams();
@@ -41,6 +40,8 @@ export default function ProductList({
     router.push(`/dashboard/products?${params.toString()}
 `);
   };
+
+  useEffect(()=>console.table(products),[])
 
   return (
     <div className="p-6 space-y-4 w-full">
@@ -74,20 +75,7 @@ export default function ProductList({
           <p className="text-gray-500">No products found.</p>
         )}
         {products.map((product) => (
-          <div key={product.id} className="p-2 border rounded hover:bg-gray-50 flex justify-between">
-            <div>
-              <div className="font-medium">{product.name}</div>
-              <div className="text-sm text-gray-600">
-                {product.category} — ${product.price.toFixed(2)}
-              </div>
-            </div>
-            <Link
-              href={`/dashboard/products/${product.id}`}
-              className="text-blue-600 hover:underline text-sm self-center"
-            >
-              View
-            </Link>
-          </div>
+         <ProductView key={product.id} product={product}/>
         ))}
       </div>
 

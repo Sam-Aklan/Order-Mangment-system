@@ -8,10 +8,10 @@ import { productSchema } from "@/lib/validations/productValidation";
 
 export default function ProductEditForm({
   product,
-  onClose,
+  // onClose,
 }: {
   product: productType;
-  onClose: () => void;
+  // onClose: () => void;
 }) {
   const router = useRouter();
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -58,11 +58,7 @@ export default function ProductEditForm({
       body: data,
     });
 
-    // console.table({
-    //   name:process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME,
-    //   preset:process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET
-    // })
-
+    
     if (!res.ok) throw new Error("Cloudinary upload failed");
     const result = await res.json();
   return {
@@ -107,23 +103,29 @@ export default function ProductEditForm({
        
       }
 
+     
+
       // Update DB
-      const response = await fetch(`/api/product/${product.id}`, {
+      const response = await fetch(`/api/product/`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          name: formData.name,
-          price: parseFloat(formData.price),
-          category: formData.category,
-          stock: parseInt(formData.stock, 10),
-          imageUrl:uploaded?.url,
+          id:product.id,
+          name: parsed.data.name,
+          price: parsed.data.price,
+          category: parsed.data.category,
+          stock: parsed.data.stock,
+          imageUrl:uploaded?.url||null,
+          imagePublicId:uploaded?.publicId ||null,
+          deleteOldImage
+
         }),
       });
 
       if (!response.ok) throw new Error("Failed to update product");
 
       router.refresh();
-      onClose();
+      // onClose();
     } catch (err) {
       console.error("Error updating product:", err);
       // if new upload succeeded but DB update failed → delete Cloudinary image here
@@ -134,7 +136,7 @@ export default function ProductEditForm({
   };
 
   return (
-    <div className="border rounded p-4 mb-4 bg-gray-50">
+    <div className="border rounded p-4 mb-4 bg-gray-50 w-3xl">
       <h3 className="font-medium mb-2">Edit Product</h3>
       <form onSubmit={handleSubmit}>
         {/* Image Upload */}
@@ -254,7 +256,7 @@ export default function ProductEditForm({
         <div className="flex justify-end gap-2">
           <button
             type="button"
-            onClick={onClose}
+            // onClick={onClose}
             className="px-4 py-2 border rounded"
             disabled={isSubmitting}
           >

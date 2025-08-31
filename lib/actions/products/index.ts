@@ -12,6 +12,13 @@ export const getProducts = async():Promise<productType[]>=>{
     return products
 }
 
+export const getProduct = async(productId:string)=>{
+ const product = await prisma.product.findUnique({
+    where:{id:productId}
+  })
+  return product
+}
+
 export const getProductsQuery = async(
     page:number,
     limit:number,

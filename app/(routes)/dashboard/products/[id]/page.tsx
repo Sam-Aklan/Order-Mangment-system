@@ -1,7 +1,8 @@
 
+import ProductEditForm from "@/components/product/ProductEditForm";
 import ProductFilter from "@/components/product/ProductFilter";
 import ProductList from "@/components/product/ProductList";
-import { categoryType, getProductsQuery } from "@/lib/actions/products";
+import { categoryType, getProduct, getProductsQuery } from "@/lib/actions/products";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
@@ -10,14 +11,17 @@ export const metadata: Metadata = {
   };
 
 export default async function EditProductPage({params}:{params:Promise<{id:string}>}){
-   
-   
+   const {id} = await params
+   const product = await getProduct(id)
 
     return (
         <main className="max-w-6xl flex items-center justify-center flex-col mx-auto p-6 space-y-4 text-black">
-        <h1 className="text-2xl font-bold">Products</h1>
-       
-        
+      { product? <>
+        <h1 className="text-2xl font-bold">Product</h1>
+         
+          <ProductEditForm product={product}/>
+      </>
+        :<p> no product found</p>}
       </main>
       );
 }

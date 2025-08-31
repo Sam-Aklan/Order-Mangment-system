@@ -36,15 +36,15 @@ export async function POST(request: Request) {
 }
 
 
-export async function PUT(request: Request,{params}:{params:Promise<{id:string}>}) {
+export async function PUT(request: Request) {
   try {
     const body = await request.json();
-    const {id} = await params
-    const result = await updateProduct(id, {
+   
+    const result = await updateProduct(body.id, {
       name: body.name,
-      price: body.price,
+      price: parseFloat(body.price),
       category: body.category,
-      stock: body.stock,
+      stock: parseInt(body.stock),
       imageUrl: body.imageUrl ?? null,
       imagePublicId: body.imagePublicId ?? null,
       deleteOldImage: body.deleteOldImage ?? false,
