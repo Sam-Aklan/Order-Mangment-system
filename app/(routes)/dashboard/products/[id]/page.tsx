@@ -1,8 +1,6 @@
 
 import ProductEditForm from "@/components/product/ProductEditForm";
-import ProductFilter from "@/components/product/ProductFilter";
-import ProductList from "@/components/product/ProductList";
-import { categoryType, getProduct, getProductsQuery } from "@/lib/actions/products";
+import {  getProduct } from "@/lib/actions/products";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {

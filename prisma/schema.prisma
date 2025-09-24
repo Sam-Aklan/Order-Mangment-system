@@ -80,6 +80,8 @@ model Customer {
   id      String  @id @default(uuid())
   name    String
   email   String  @unique
+  imageUrl   String?
+  imagePublicId String?
   orders  Order[]
 }
 

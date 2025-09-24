@@ -89,7 +89,7 @@ export async function getOrders(
             {customer:{name:{contains:q,}}},
             {items:{some:{product:{name:{contains:q,}}}}}
           ]
-        })
+        }),
         },
     select:{
       id:true,
