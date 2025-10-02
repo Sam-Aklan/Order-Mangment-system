@@ -3,8 +3,17 @@
 import { productType } from "@/lib/actions/products";
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { Dispatch, SetStateAction, useCallback, useState } from "react";
 
-export default function ProductView({ product }: { product: productType }) {
+export default function ProductView({ product,setToDelete }: { product: productType,setToDelete:Dispatch<SetStateAction<{
+  name:string,
+  id:string
+}| null>> }) {
+  const router = useRouter()
+  
+
+  
   return (
     <div className="p-4 border rounded-lg hover:shadow-md transition bg-white flex gap-4">
       {/* Image */}
@@ -23,6 +32,8 @@ export default function ProductView({ product }: { product: productType }) {
         )}
       </div>
 
+        <div>
+
       {/* Details */}
       <div className="flex-1 flex flex-col justify-between">
         <div>
@@ -38,13 +49,27 @@ export default function ProductView({ product }: { product: productType }) {
             {product.stock > 0 ? `${product.stock} in stock` : "Out of stock"}
           </div>
         </div>
+        
+            {/* actions */}
+            <div className="flex gap-2 items-center mt-2">
 
         <Link
           href={`/dashboard/products/${product.id}`}
-          className="text-blue-600 hover:underline text-sm mt-2 self-start"
+          className="text-blue-600 hover:underline text-sm self-start"
         >
           View
         </Link>
+
+         <button
+          onClick={()=>setToDelete({name:product.name,id:product.id})}
+          className="bg-red-600 hover:bg-red-800 text-sm text-white w-15"
+        >
+          Delete
+        </button>
+            </div>
+        
+        </div>
+
       </div>
     </div>
   );

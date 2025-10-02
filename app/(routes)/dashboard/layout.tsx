@@ -14,7 +14,6 @@ export default async function DashboardLayout({ children }: { children: React.Re
     redirect("/sign-in"); 
   }
 
- 
 
   return <>
    <main className="max-w-md  flex items-center justify-center flex-col mx-auto p-6 space-y-4 text-white">

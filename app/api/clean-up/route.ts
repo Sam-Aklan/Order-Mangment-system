@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
+import prisma from '@/lib/prisma';
 
 export async function GET(request: Request) {
   const authHeader = request.headers.get('Authorization');
@@ -21,7 +21,8 @@ export async function GET(request: Request) {
     return NextResponse.json({ success: true, deletedCount: count });
   } catch (error) {
     console.error('Error deleting expired sessions:', error);
-    return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+   
+    return NextResponse.json({ success: false, error: "Error deleting expired sessions:" }, { status: 500 });
   }
 }
 

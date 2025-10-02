@@ -77,12 +77,26 @@ export async function getOrders(
   limit?:number,
   status?:statusType,
   q?:string,
+  fromDate?: string,
+  toDate?: string,
 ):Promise<{orders:ordersType,count:number}>{
   const currentPage = page?page:1
   const take = limit?limit:3
 
-   const ordersData = await prisma.order.findMany({
-   where: {...(role !=="ADMIN" && {userId:userId}),
+  let dateFilter:{gte?:Date,lte?:Date}={}
+
+  if (fromDate) {
+    dateFilter.gte = new Date(fromDate);
+  }
+  if (toDate) {
+    // include the whole day by setting end of day
+    const end = new Date(toDate);
+    end.setHours(23, 59, 59, 999);
+    dateFilter.lte = end;
+  }
+  console.log("date filters",dateFilter)
+  const whereStatement={
+    ...(role !=="ADMIN" && {userId:userId}),
           ...(status?{status}:{}),
         ...(q&&{
           OR:[
@@ -90,7 +104,11 @@ export async function getOrders(
             {items:{some:{product:{name:{contains:q,}}}}}
           ]
         }),
-        },
+        ...(Object.keys(dateFilter).length > 0 && {createdAt:dateFilter})
+  }
+
+   const ordersData = await prisma.order.findMany({
+   where: whereStatement,
     select:{
       id:true,
       createdAt:true,
@@ -111,15 +129,7 @@ export async function getOrders(
 
 // count of orders for specific filters
 const ordersCount = await prisma.order.count({
-  where: {...(role !=="ADMIN" && {userId:userId}),
-  ...(status?{status}:{}),
-...(q&&{
-  OR:[
-    {customer:{name:{contains:q,}}},
-    {items:{some:{product:{name:{contains:q,}}}}}
-  ]
-})
-},}
+  where: whereStatement,}
 )
   return {orders:ordersData,count:ordersCount}
 }
@@ -285,6 +295,50 @@ const { orderId, customerId, status } = result.data;
   await prisma.$transaction(tx);
 
   return { success: true };
+}
+
+
+
+export async function deleteOrder(orderId: string, userId?: string, userRole: "admin" | "user" = "user") {
+  try {
+    // Verify ownership if user is not admin
+    if (userRole === "admin") {
+      const order = await prisma.order.findUnique({
+        where: { id: orderId },
+        select: { customerId: true,items:{select:{id:true,quantity:true,productId:true}} }
+      });
+
+      if (!order) {
+        return { success: false, error: "Order not found" };
+      }
+
+      // if (order.customerId !== userId) {
+      //   return { success: false, error: "Unauthorized to delete this order" };
+      // }
+      await prisma.$transaction(async(tx)=>{
+       // 1. Restock products
+      for (const item of order.items) {
+        await tx.product.update({
+          where: { id: item.productId },
+          data: { stock: { increment: item.quantity } },
+        });
+      }
+
+      // 2. Delete order items
+      await tx.orderItem.deleteMany({ where: { orderId } });
+
+      // 3. Delete order
+      await tx.order.delete({ where: { id: orderId } });
+      })
+    }
+
+
+
+    return { success: true };
+  } catch (error) {
+    console.error("Delete order error:", error);
+    return { success: false, error: "Failed to delete order" };
+  }
 }
 
 export type orderType = {

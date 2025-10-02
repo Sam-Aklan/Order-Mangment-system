@@ -108,36 +108,36 @@ export default function ProductForm({
         // console.table(uploaded)
       }
   
-      throw new Error("test delete")
+      // throw new Error("test delete")
 
-      // const response = await fetch("/api/product", {
-      //   method: "POST",
-      //   headers: { "Content-Type": "application/json" },
-      //   body: JSON.stringify({
-      //     name: parsed.data.name,
-      //     price: parsed.data.price,
-      //     category: parsed.data.category,
-      //     stock: parsed.data.stock,
-      //     imageUrl: uploaded?.url || null,
-      //     imagePublicId: uploaded?.publicId || null, 
-      //   }),
-      // });
+      const response = await fetch("/api/product", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: parsed.data.name,
+          price: parsed.data.price,
+          category: parsed.data.category,
+          stock: parsed.data.stock,
+          imageUrl: uploaded?.url || null,
+          imagePublicId: uploaded?.publicId || null, 
+        }),
+      });
   
-      // if (!response.ok) {
-      //   throw new Error("Failed to create product in DB");
-      // }
+      if (!response.ok) {
+        throw new Error("Failed to create product in DB");
+      }
   
      
-      // // Redirect with filters
-      // const params = new URLSearchParams();
-      // params.set("q", formData.name);
-      // params.set("category", formData.category);
-      // params.set("minPrice", String(formData.price));
-      // params.set("page", "1");
+      // Redirect with filters
+      const params = new URLSearchParams();
+      params.set("q", formData.name);
+      params.set("category", formData.category);
+      params.set("minPrice", String(formData.price));
+      params.set("page", "1");
 
-      // router.push(`/dashboard/products?${params.toString()}`);
-      // router.refresh();
-      // onClose();
+      router.push(`/dashboard/products?${params.toString()}`);
+      router.refresh();
+      onClose();
   
     } catch (err) {
       console.error("Error creating product:", err);

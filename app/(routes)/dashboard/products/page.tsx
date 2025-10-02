@@ -23,12 +23,12 @@ export const metadata: Metadata = {
 export default async function ProductsPage({searchParams}:ProductsPageProps){
     const {q,category,limit,maxPrice,minPrice,page:currentPage} = await searchParams
     const page = currentPage?parseInt(currentPage) : 1;
-    const offset = limit?parseInt(limit): 2;
+    const offset = limit?parseInt(limit): 5;
     const higherPrice = maxPrice? parseFloat(maxPrice):undefined
     const lowerPrice = minPrice? parseFloat(minPrice):undefined
 
    const {products,count} = await getProductsQuery(page,offset,q,lowerPrice,higherPrice,category as categoryType);
-   const totalPages = Math.max(1, Math.floor( count / offset));
+   const totalPages = Math.max(1, Math.ceil( count / offset));
    const envVars = {
     a:process.env.CLOUD_NAME,
     b:process.env.UPLOAD_PRESET,

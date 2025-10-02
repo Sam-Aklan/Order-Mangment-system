@@ -2,6 +2,8 @@
 
 import { cloudinaryInst } from "@/lib/config"
 import prisma from "@/lib/prisma"
+import { error } from "console"
+import { success } from "zod"
 
 export const getProducts = async():Promise<productType[]>=>{
    const products = await prisma.product.findMany({
@@ -135,6 +137,44 @@ export async function createProduct(productData: {
       return { success: false, error: "Failed to update product" };
     }
   }
+
+
+export async function deleteProduct(productId: string, userRole:"admin"|"user") {
+  try {
+    // find product first
+    const product = await prisma.product.findUnique({
+      where: { id: productId },
+    });
+
+    if(userRole !=="admin") return {success:false,error:"User not authorized"}
+
+    if (!product) {
+      return { success: false, error: "Product not found" };
+    }
+
+    // transaction: delete product + cleanup related items
+    await prisma.$transaction(async (tx) => {
+      // 1. delete related orderItems (to keep referential integrity)
+      await tx.orderItem.deleteMany({ where: { productId } });
+
+      // 2. delete product
+      await tx.product.delete({ where: { id: productId } });
+    });
+
+    // delete image from cloudinary if exists
+    if (product.imagePublicId) {
+      await cloudinaryInst.uploader.destroy(product.imagePublicId);
+    }
+
+  
+
+    return { success: true };
+  } catch (error) {
+    console.error("Failed to delete product:", error);
+    return { success: false, error: "Error deleting product" };
+  }
+}
+
 
 
 export type productType = {
