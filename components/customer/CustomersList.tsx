@@ -6,10 +6,11 @@ import { useState } from "react";
 import Modal from "../Modal";
 import CustomerView from "./CustomerView";
 import CustomerForm from "./CustomerForm";
+import Pagination from "../Pagination";
 
 interface CustomerListProps {
   customers: customerType[];
-  searchParams: { q?: string; page: number };
+  searchParams: { q?: string; page: number,pageSize:number };
   totalPages: number;
 }
 
@@ -26,6 +27,13 @@ export default function CustomerList({
     if (searchParams.q) params.set("q", searchParams.q);
     params.set("page", String(newPage));
 
+    router.push(`/dashboard/customers?${params.toString()}`);
+  };
+  const handlePageSizeChange = (newSize: number) => {
+    const params = new URLSearchParams();
+    if (searchParams.q) params.set("q", searchParams.q);
+    params.set("page","1");
+    params.set("limit",String(newSize))
     router.push(`/dashboard/customers?${params.toString()}`);
   };
 
@@ -61,7 +69,7 @@ export default function CustomerList({
         ))}
       </div>
 
-      <div className="flex justify-between">
+      {/* <div className="flex justify-between">
         <button
           onClick={() => handlePageChange(searchParams.page - 1)}
           disabled={searchParams.page === 1}
@@ -79,7 +87,13 @@ export default function CustomerList({
         >
           Next
         </button>
-      </div>
+      </div> */}
+      <Pagination
+      currentPage={searchParams.page}
+      totalPages={totalPages}
+      pageSize={searchParams.pageSize||5}
+      onPageChange={handlePageChange}
+      onPageSizeChange={handlePageSizeChange}/>
     </div>
   );
 }

@@ -6,6 +6,7 @@ import Link from "next/link";
 interface SearchParams {
   q?: string;
   page?: string;
+  limit?:string;
 }
 
 export default async function CustomersPage({
@@ -15,14 +16,15 @@ export default async function CustomersPage({
 }) {
   const q = (await searchParams).q || "";
   const page = parseInt((await searchParams).page || "1", 10);
+  const pageSize = parseInt((await searchParams).limit ||"3")
 
-  const { customers, totalPages } = await getCustomersQuery({ q, page, limit: 10 });
+  const { customers, totalPages } = await getCustomersQuery({ q, page, limit: pageSize});
 
   return (
     <div className="max-w-4xl mx-auto p-6">
       <h1 className="text-2xl font-semibold mb-4">Customers</h1>
     <CustomerFilter searchParams={{q,page:String(page)}}/>
-    <CustomerList customers={customers} totalPages={totalPages} searchParams={{q,page}}/>
+    <CustomerList customers={customers} totalPages={totalPages} searchParams={{q,page,pageSize}}/>
     </div>
   );
 }
