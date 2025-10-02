@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { getOrders } from '@/lib/actions/orders';
+import { deleteOrder, getOrders } from '@/lib/actions/orders';
 import { auth } from '@/lib/auth';
 
 export async function GET(request: Request) {
@@ -7,6 +7,8 @@ export async function GET(request: Request) {
   const q = searchParams.get('q') || undefined;
   const status = searchParams.get('status') || undefined;
   const page = parseInt(searchParams.get('page') || '1');
+  const fromDate = searchParams.get("fromDate") || undefined
+  const toDate =searchParams.get("toDate") || undefined
   const limit = parseInt(searchParams.get("offset") || '3')
   
   const session = await auth.api.getSession({ headers: request.headers });
@@ -22,6 +24,8 @@ export async function GET(request: Request) {
       limit,
       status as "PENDING" | "DELIVERED" | "SHIPPED" | undefined,
       q,
+      fromDate,
+      toDate
     );
     const {orders,count:totalCount} = pagin
     
@@ -35,5 +39,30 @@ export async function GET(request: Request) {
       { error: 'Failed to fetch orders' },
       { status: 500 }
     );
+  }
+}
+
+
+
+export async function DELETE(request: Request) {
+  try {
+
+     const session = await auth.api.getSession({ headers: request.headers });
+  if (!session) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+   const {orderId}=await request.json()
+    const {user} = session
+
+    const result = await deleteOrder(orderId, user.id, user.role as "admin"|"user");
+
+    if (!result.success) {
+      return NextResponse.json({ error: result.error }, { status: 400 });
+    }
+
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    console.error("API order DELETE error:", error);
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }

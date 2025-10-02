@@ -1,37 +1,55 @@
-'use client';
+"use client";
 
 import { ordersType } from "@/lib/actions/orders";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { useCallback, useEffect, useState } from "react";
+import {
+  useCallback,
+  useEffect,
+  useState,
+} from "react";
 import { useInView } from "react-intersection-observer";
+import ConfirmModal from "../ConfirmModal";
 
 // ... other imports
 
-export function OrdersList({ initialOrders, searchParams }: { 
+export function OrdersList({
+  initialOrders,
+  searchParams,
+  userRole,
+}: {
   initialOrders: ordersType;
-  searchParams: { q?: string; status?: string };
+  searchParams: { q?: string; status?: string, fromDate?:string, toDate?:string };
+  userRole: "admin" | "user";
 }) {
   const [orders, setOrders] = useState(initialOrders);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(initialOrders.length > 0);
   const [isLoading, setIsLoading] = useState(false);
   const [currentFilters, setCurrentFilters] = useState(searchParams);
+  const [orderToDelete, setOrderToDelete] = useState<string | null>(null);
   const params = useSearchParams();
 
-  const {ref,inView}= useInView()
-//   Reset state when filters change
+  const { ref, inView } = useInView();
+  //   Reset state when filters change
   useEffect(() => {
-    if (params.get('q') !== currentFilters.q || params.get('status') !== currentFilters.status) {
+    if (
+      params.get("q") !== currentFilters.q ||
+      params.get("status") !== currentFilters.status ||
+      params.get("fromDate") !== currentFilters.fromDate ||
+      params.get("toDate") !== currentFilters.toDate
+    ) {
       setOrders(initialOrders);
       setPage(1);
-    //   setHasMore(initialOrders.length > 0);
+      //   setHasMore(initialOrders.length > 0);
       setCurrentFilters({
-        q: params.get('q') || undefined,
-        status: params.get('status') || undefined
+        q: params.get("q") || undefined,
+        status: params.get("status") || undefined,
+        fromDate:params.get("fromDate") || undefined,
+        toDate:params.get("toDate") || undefined
       });
     }
-  }, [ params]);
+  }, [params]);
 
   const loadMoreOrders = useCallback(async () => {
     // Don't load if already loading or no more data
@@ -44,40 +62,60 @@ export function OrdersList({ initialOrders, searchParams }: {
         page: nextPage.toString(),
       });
 
-      if (currentFilters.q) queryParams.set('q', currentFilters.q);
-      if (currentFilters.status) queryParams.set('status', currentFilters.status);
+      if (currentFilters.q) queryParams.set("q", currentFilters.q);
+      if (currentFilters.status)
+        queryParams.set("status", currentFilters.status);
+      if(currentFilters.fromDate) queryParams.set("fromDate",currentFilters.fromDate)
+      if(currentFilters.toDate) queryParams.set("toDate",currentFilters.toDate)
 
       const response = await fetch(`/api/orders?${queryParams.toString()}`);
       const { orders: newOrders, pagination } = await response.json();
-      console.log("orders", newOrders, "pagination", pagination)
-      setOrders(prev => [...prev, ...newOrders]);
+      console.log("orders", newOrders, "pagination", pagination);
+      setOrders((prev) => [...prev, ...newOrders]);
       setPage(nextPage);
       setHasMore(pagination.hasMore); // Update based on API response
-      
     } catch (error) {
-      console.error('Error loading more orders:', error);
+      console.error("Error loading more orders:", error);
     } finally {
       setIsLoading(false);
     }
   }, [page, hasMore, isLoading, currentFilters]);
 
-  useEffect(()=>{
-    if(inView)loadMoreOrders()
-  },[inView])
+  const deleteAction = useCallback(async (orderId: string) => {
+    try {
+      const res = await fetch(`/api/orders/`, {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ orderId: orderId }),
+      });
+      if (!res.ok) {
+        const data = await res.json();
+        alert(data.error || "Failed to delete order");
+        return;
+      }
+      // Optimistic UI update
+      setOrders((prev) => prev.filter((o) => o.id !== orderId));
+      setOrderToDelete(null)
+    } catch (err) {
+      console.error("Delete order failed", err);
+    }
+  }, []);
 
-  return(
+  useEffect(() => {
+    if (inView) loadMoreOrders();
+  }, [inView]);
+
+  return (
     <>
-     {orders.map((order) => {
+      {orders.map((order) => {
         const total = order.items.reduce(
           (sum, item) => sum + item.product.price * item.quantity,
           0
         );
 
         return (
-          <Link href={`/dashboard/order/${order.id}`}
-          key={order.id}>
           <div
-            
+            key={order.id}
             className="border rounded p-4 mb-4 shadow-sm bg-white"
           >
             <div className="flex justify-between">
@@ -103,34 +141,50 @@ export function OrdersList({ initialOrders, searchParams }: {
               </div>
             </div>
 
-            <div className="mt-4">
-              <p className="font-medium mb-1">Products:</p>
-              <ul className="list-disc ml-6 text-sm">
-                {order.items.map((item) => (
-                  <li key={item.id}>
-                    {item.product.name} × {item.quantity} (${item.product.price.toFixed(2)} each)
-                  </li>
-                ))}
-              </ul>
+            <div className={`mt-4 flex justify-between`}>
+              <div>
+                <p className="font-medium mb-1">Products:</p>
+                <ul className="list-disc ml-6 text-sm">
+                  {order.items.map((item) => (
+                    <li key={item.id}>
+                      {item.product.name} × {item.quantity} ($
+                      {item.product.price.toFixed(2)} each)
+                    </li>
+                  ))}
+                </ul>
+              </div>
+              <div className="flex gap-0.5">
+
+              {userRole === "admin" ? (
+                <button
+                  className="bg-red-500 text-white px-4 py-1 rounded-3xl hover:bg-red-600 w-20 h-10"
+                  onClick={() => setOrderToDelete(order.id)}
+                >
+                  Delete
+                </button>
+              ) : undefined}
+              <Link href={`/dashboard/order/${order.id}`} className="bg-blue-500 text-white text-center px-4 py-1 rounded-3xl hover:bg-blue-600 w-20 h-10 flex justify-center items-center">
+                <p>View</p>
+              </Link>
+              </div>
             </div>
           </div>
-          </Link>
         );
       })}
 
-      {/* {isLoading && (
-        <div className="text-center py-4">
-          <p>Loading more orders...</p>
-        </div>
-      )} */}
+      <ConfirmModal
+        isOpen={!!orderToDelete}
+        title="Delete Order?"
+        message="Deleting this order will restore product stock. Are you sure?"
+        onCancel={() => setOrderToDelete(null)}
+        onConfirm={() => orderToDelete && deleteAction(orderToDelete)}
+      />
 
-      <div ref={ref}>
-        {hasMore?"loading...":undefined}
-      </div>
+      <div ref={ref}>{hasMore ? "loading..." : undefined}</div>
 
       {orders.length === 0 && !isLoading && (
         <p className="text-center text-gray-500 mt-10">No orders found.</p>
-    )
-}
+      )}
     </>
-    )}
+  );
+}

@@ -18,41 +18,34 @@ export const metadata: Metadata = {
     searchParams:Promise <{
       q?: string;
       status?: string;
+      toDate?:string;
+      fromDate?:string;
     }>;
   }
 
 export default async function OrdersPage({searchParams}:OrdersPageProps) {
  const session= await auth.api.getSession({headers:await headers()})
-if(!session) {
+if(!session?.user) {
   await auth.api.signOut({headers:await headers()})
   return redirect('/sign-in');
 }
 
-const {q,status} = await searchParams
+const {q,status,fromDate,toDate} = await searchParams
 
-console.log("qeury params", q, status)
+console.log("user Role", session.user.role)
 
-const {orders,} = await getOrders("ADMIN", session?.user.id,1,3,status as "PENDING"|"DELIVERED"|"SHIPPED"|undefined,q)
+const {orders,} = await getOrders("ADMIN", session?.user.id,1,3,status as "PENDING"|"DELIVERED"|"SHIPPED"|undefined,q,fromDate,toDate)
  return (
   <div className="max-w-4xl mx-auto mt-10">
-    <OrderFilters initialQuery={q ||""} initialStatus={status||""}/>
+    <OrderFilters initialQuery={q ||""} initialStatus={status||""} initialFromDate={fromDate || ""} initialToDate={toDate || ""}/>
     <div className="flex justify-between">
     <h1 className="text-2xl font-bold mb-6">Orders</h1>
   <Link href={'/dashboard/order/new'} className="w-fit h-fit px-4 py-2 text-white bg-black rounded-2xl transition-transform duration-200 hover:scale-95" type="button">
   place order
   </Link>
     </div>
-      <OrdersList initialOrders={orders} searchParams={{q,status}}/>
-      {/* <ul>
-
-      {
-        orders.map(ord=><li key={ord.id}>
-
-         { ord.customer.name}
-        </li>
-      )
-      }
-      </ul> */}
+      <OrdersList initialOrders={orders} searchParams={{q,status,fromDate,toDate}} userRole={session.user.role as "admin"|"user"}/>
+    
     </div>
 );
 }

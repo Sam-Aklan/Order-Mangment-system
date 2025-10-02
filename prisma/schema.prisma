@@ -70,6 +70,8 @@ model Product {
   name    String
   price   Float
   stock   Int
+  imageUrl   String?
+  imagePublicId String?
   category ProductCategory @default(OTHER)
   items   OrderItem[]
 }
@@ -78,6 +80,8 @@ model Customer {
   id      String  @id @default(uuid())
   name    String
   email   String  @unique
+  imageUrl   String?
+  imagePublicId String?
   orders  Order[]
 }
 

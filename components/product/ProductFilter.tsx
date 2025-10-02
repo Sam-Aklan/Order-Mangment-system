@@ -18,13 +18,6 @@ const ProductFilter = ({ currentPage, searchParams }: {
   const [maxPrice, setMaxPrice] = useState(searchParams.maxPrice || "");
   const router = useRouter();
 
- 
-  useEffect(() => {
-    setName(searchParams.q || "");
-    setCategory(searchParams.category || "");
-    setMinPrice(searchParams.minPrice || "");
-    setMaxPrice(searchParams.maxPrice || "");
-  }, [searchParams]);
 
   const submitFilters = () => {
     const params = new URLSearchParams();

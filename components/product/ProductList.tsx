@@ -1,11 +1,13 @@
 "use client";
 
-import Link from "next/link";
 import { productType } from "@/lib/actions/products";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import ProductForm from "./ProductForm";
 import Modal from "../Modal";
+import ProductView from "./ProductView";
+import ConfirmModal from "../ConfirmModal";
+import Pagination from "../Pagination";
 
 interface productsListProps {
   products: productType[];
@@ -25,9 +27,11 @@ export default function ProductList({
   searchParams,
   totalPages,
 }: productsListProps) {
+
   const router = useRouter();
-  const [showAddForm, setShowAddForm] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [productToDelete, setProductToDelete] = useState<{name:string,id:string}|null>(null)
+
   const handlePageChange = (newPage: number) => {
     const params = new URLSearchParams();
     
@@ -41,6 +45,40 @@ export default function ProductList({
     router.push(`/dashboard/products?${params.toString()}
 `);
   };
+
+  const handlePageSizeChange = (newSize: number) => {
+    const params = new URLSearchParams();
+
+    // Reset to first page when changing size
+    if (searchParams.q) params.set("q", searchParams.q);
+    if (searchParams.category) params.set("category", searchParams.category);
+    if (searchParams.minPrice) params.set("minPrice", String(searchParams.minPrice));
+    if (searchParams.maxPrice) params.set("maxPrice", String(searchParams.maxPrice));
+
+    params.set("page", "1");
+    params.set("limit", String(newSize));
+
+    router.push(`/dashboard/products?${params.toString()}`);
+  };
+
+ const handleProductDelete = useCallback(async (id:string) => {
+ 
+     try {
+       const res = await fetch(`/api/product/`, {
+         method: "DELETE",
+         headers: { "Content-Type": "application/json" },
+         body:JSON.stringify({productId:id})
+       });
+       const data = await res.json();
+ 
+       if (!res.ok) throw new Error(data.error || "Failed to delete product");
+ 
+       router.refresh();
+     } catch (err) {
+       console.error("Delete failed:", err);
+       alert("Failed to delete product.");
+     }
+   },[]) 
 
   return (
     <div className="p-6 space-y-4 w-full">
@@ -74,42 +112,26 @@ export default function ProductList({
           <p className="text-gray-500">No products found.</p>
         )}
         {products.map((product) => (
-          <div key={product.id} className="p-2 border rounded hover:bg-gray-50 flex justify-between">
-            <div>
-              <div className="font-medium">{product.name}</div>
-              <div className="text-sm text-gray-600">
-                {product.category} — ${product.price.toFixed(2)}
-              </div>
-            </div>
-            <Link
-              href={`/products/${product.id}`}
-              className="text-blue-600 hover:underline text-sm self-center"
-            >
-              View
-            </Link>
-          </div>
+         <ProductView key={product.id} product={product} setToDelete={setProductToDelete}/>
         ))}
       </div>
 
-      <div className="flex justify-between">
-        <button
-          onClick={() => handlePageChange(searchParams.page - 1)}
-          disabled={searchParams.page === 1}
-          className="px-3 py-1 border rounded disabled:opacity-50"
-        >
-          Previous
-        </button>
-        <div className="text-sm">
-          Page {searchParams.page} of {totalPages}
-        </div>
-        <button
-          onClick={() => handlePageChange(searchParams.page + 1)}
-          disabled={searchParams.page === totalPages}
-          className="px-3 py-1 border rounded disabled:opacity-50"
-        >
-          Next
-        </button>
-      </div>
+      
+       {/* Pagination */}
+      <Pagination
+        currentPage={searchParams.page}
+        totalPages={totalPages}
+        pageSize={searchParams.limit || 5}
+        onPageChange={handlePageChange}
+        onPageSizeChange={handlePageSizeChange}
+      />
+      <ConfirmModal
+      isOpen={!!productToDelete}
+      onCancel={()=>setProductToDelete(null)}
+      onConfirm={()=>productToDelete && handleProductDelete(productToDelete.id)}
+      title="Product Deletion Warring"
+      message={`You are about deleting ${productToDelete?.name}`}
+      />
     </div>
   );
 }
