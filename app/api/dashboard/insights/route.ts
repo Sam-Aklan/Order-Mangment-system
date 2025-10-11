@@ -14,6 +14,8 @@ export async function GET(request: Request) {
   const status = url.searchParams.get("status") as statusType || undefined;
   const category = url.searchParams.get("category") || undefined;
 
+  console.log("api route query params",from,to,granularity,status,category);
+
   try {
     
       const {averageOrderValue,lowStockProducts,newCustomers,totalOrders,totalCustomers,totalRevenue,byStatus,lowStockProductsList,recentOrders,timeseries,topCustomers,topProducts,topProductsByCategory} =await getInsights(granularity,from,to,status,category)

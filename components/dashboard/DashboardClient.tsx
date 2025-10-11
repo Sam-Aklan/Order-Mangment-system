@@ -10,7 +10,6 @@ import {
   Legend,
   Line,
   LineChart,
-  ResponsiveContainer,
   XAxis,
   YAxis,
 } from "recharts";
@@ -18,9 +17,15 @@ import { ChartTooltip,ChartTooltipContent, ChartContainer, ChartConfig, } from '
 import { ChartCard, KPICard } from './KPICard';
 
 
-const DashboardClient = ({data}:{data:InsightResponse}) => {
-   
+const DashboardClient = ({initailData}:{initailData:InsightResponse, initialFrom?: string;
+  initialTo?: string;
+  initialGranularity?: "day" | "week" | "month";}) => {
+   const [data, setData] = useState(initailData)  
   const { kpis, byStatus, timeseries, topProducts, topCustomers, topProductsByCategory } = data;
+
+  useEffect(()=>{
+    setData(initailData)
+  },[initailData])
 
   const topProductConfig = {
     product:{
@@ -184,7 +189,7 @@ const DashboardClient = ({data}:{data:InsightResponse}) => {
                 }))}
               >
                 <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="name" hide />
+                <XAxis dataKey="name"  />
                 <YAxis />
                 <ChartTooltip content={<ChartTooltipContent/>} />
                 <Bar dataKey="qty" fill="#3B82F6" />
