@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
-import { auth } from "@/lib/auth";
 import { statusType } from "@/lib/actions/orders";
 import { getInsights } from "@/lib/actions/dashboard";
+import { categoryType } from "@/lib/actions/products";
 
 
 
@@ -12,9 +12,7 @@ export async function GET(request: Request) {
   const to = url.searchParams.get("to") || undefined;
   const granularity = url.searchParams.get("granularity") as "day"|"week"|"month" || "day";
   const status = url.searchParams.get("status") as statusType || undefined;
-  const category = url.searchParams.get("category") || undefined;
-
-  console.log("api route query params",from,to,granularity,status,category);
+  const category = url.searchParams.get("category") as categoryType || undefined;
 
   try {
     

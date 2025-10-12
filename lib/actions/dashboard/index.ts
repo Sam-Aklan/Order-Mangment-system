@@ -16,7 +16,7 @@ export const getInsights = async (
   from?: string,
   to?: string,
   status?: statusType,
-  category?: string
+  category?: categoryType
 ) => {
   const { start, end } = parseRange(from, to);
 
@@ -24,14 +24,16 @@ export const getInsights = async (
   // KPI: total orders
   // ------------------------------
 
-  const orderWhere = {
-    ...(status ? { status: status } : {}),
-    ...(start || end
-      ? {
-          createdAt: { ...(start && { gte: start }), ...(end && { lte: end }) },
-        }
-      : {}),
-  };
+ const orderWhere = {
+  ...(status ? { status: status } : {}),
+  ...(start || end
+    ? {
+        createdAt: { ...(start && { gte: start }), ...(end && { lte: end }) },
+      }
+    : {}),
+  ...(category ? { items: { some: { product: { category: category } } } } : {}),
+};
+
 
   const totalOrders = await prisma.order.count({ where: orderWhere });
 
@@ -50,10 +52,10 @@ export const getInsights = async (
   // Orders with items + product (for revenue, top products, timeseries)
   // ------------------------------
   const orders = await prisma.order.findMany({
-    where: orderWhere,
+    where: orderWhere ,
     include: {
       customer: true,
-      items: { include: { product: true } },
+      items: { include: { product: true, } },
     },
     orderBy: { createdAt: "asc" },
   });
