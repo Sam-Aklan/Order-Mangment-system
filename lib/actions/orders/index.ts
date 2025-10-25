@@ -94,7 +94,7 @@ export async function getOrders(
     end.setHours(23, 59, 59, 999);
     dateFilter.lte = end;
   }
-  console.log("date filters",dateFilter)
+  
   const whereStatement={
     ...(role !=="ADMIN" && {userId:userId}),
           ...(status?{status}:{}),

@@ -1,4 +1,3 @@
-
 import { OrderFilters } from "@/components/order/OrderFilters";
 import { OrdersList } from "@/components/order/OrderList";
 import { getOrders } from "@/lib/actions/orders";
@@ -31,8 +30,6 @@ if(!session?.user) {
 }
 
 const {q,status,fromDate,toDate} = await searchParams
-
-console.log("user Role", session.user.role)
 
 const {orders,} = await getOrders("ADMIN", session?.user.id,1,3,status as "PENDING"|"DELIVERED"|"SHIPPED"|undefined,q,fromDate,toDate)
  return (

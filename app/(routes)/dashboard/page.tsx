@@ -1,4 +1,3 @@
-
 import DashboardClient from "@/components/dashboard/DashboardClient";
 import DashboardFilters from "@/components/dashboard/DashboardFilters";
 import { InsightResponse } from "@/lib/actions/dashboard";
@@ -40,10 +39,6 @@ export default async function DashboardPage({searchParams}:DashboardPageProps){
     if (!res.ok) throw new Error("Failed to load dashboard insights");
    
     const data: InsightResponse = await res.json()
-    console.warn("data")
-    console.table(data.kpis)
-
-    console.log("query parameters", from,to,granularity)
    
     return (
         <main className="w-full  flex items-center justify-center flex-col mx-auto p-6 space-y-4 text-black">
