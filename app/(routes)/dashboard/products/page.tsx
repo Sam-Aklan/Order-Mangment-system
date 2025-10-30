@@ -29,12 +29,7 @@ export default async function ProductsPage({searchParams}:ProductsPageProps){
 
    const {products,count} = await getProductsQuery(page,offset,q,lowerPrice,higherPrice,category as categoryType);
    const totalPages = Math.max(1, Math.ceil( count / offset));
-   const envVars = {
-    a:process.env.CLOUD_NAME,
-    b:process.env.UPLOAD_PRESET,
-   }
-   
-
+  
     return (
         <main className="max-w-6xl flex items-center justify-center flex-col mx-auto p-6 space-y-4 text-black">
         <h1 className="text-2xl font-bold">Products</h1>

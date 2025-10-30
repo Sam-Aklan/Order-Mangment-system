@@ -3,7 +3,9 @@
 import { ChangeEvent, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
-import { customerSchema } from "@/lib/validations/customerValidation";
+import { CustomerInput, customerSchema } from "@/lib/validations/customerValidation";
+import { SubmitHandler, useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 
 export default function CustomerForm({
   onClose,
@@ -13,16 +15,58 @@ export default function CustomerForm({
   const router = useRouter();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const [formData, setFormData] = useState({
-    name: "",
-    email: "",
-    image: null as File | null,
-  });
-
   const [previewImage, setPreviewImage] = useState<string | null>(null);
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [error, setError] = useState<string | null>(null);
+
+   const {
+    register,
+    handleSubmit,
+    formState: { errors,isSubmitting },
+    setValue,
+    watch,
+    trigger,
+    setError: setFormError,
+    clearErrors
+  } = useForm<CustomerInput>({
+    resolver: zodResolver(customerSchema),
+    defaultValues: {
+      name: "",
+      email: "",
+      image: null
+    }
+  });
+
+  // Watch form values
+  const formValues = watch();
+
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      const file = e.target.files[0];
+      setValue("image", file);
+      clearErrors("image");
+
+      // Create preview
+      const reader = new FileReader();
+      reader.onload = () => {
+        setPreviewImage(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+
+      // Trigger validation for image field
+      trigger("image");
+    }
+  };
+
+  const removeImage = () => {
+    setValue("image", null);
+    setPreviewImage(null);
+    clearErrors("image");
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
+  };
+
 
   const uploadToCloudinary = async (file: File): Promise<{url: string, publicId: string}> => {
     const url = `https://api.cloudinary.com/v1_1/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME}/upload`;
@@ -44,53 +88,31 @@ export default function CustomerForm({
   };
 
   // ✅ Handle file change
-  const handleImageChange = (e: ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      const file = e.target.files[0];
-      setFormData({ ...formData, image: file });
-
-      // Preview
-      const reader = new FileReader();
-      reader.onload = () => {
-        setPreviewImage(reader.result as string);
-      };
-      reader.readAsDataURL(file);
-    }
-  };
+  
 
   // ✅ Submit form
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsSubmitting(true);
-    setIsSubmitting(true);
-    setError(null);
+  const onSubmit:SubmitHandler<CustomerInput> = async (data) => {
+  
 
-    // Zod validation
-    const result = customerSchema.safeParse(formData);
-    if (!result.success) {
-      setError(result.error.issues.map(i=>i.message).join(", ")); // Show first error
-      setIsSubmitting(false);
-      return;
-    }
 
     let uploadedImageUrl: string | null = null;
     let uploadedImagePublicId: string | null = null;
    
     try {
       // If image selected → upload to Cloudinary
-      if (formData.image) {
-       const{url,publicId}= await uploadToCloudinary(formData.image)
+      if (data.image) {
+       const{url,publicId}= await uploadToCloudinary(data.image)
        uploadedImageUrl =url;
        uploadedImagePublicId = publicId;
-        const data = new FormData();
-        data.append("file", formData.image);
-        data.append("upload_preset", process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET!);
+        const imageData = new FormData();
+        imageData.append("file", data.image);
+        imageData.append("upload_preset", process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET!);
 
         const res = await fetch(
           `https://api.cloudinary.com/v1_1/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME}/image/upload`,
           {
             method: "POST",
-            body: data,
+            body: imageData,
           }
         );
 
@@ -107,8 +129,8 @@ export default function CustomerForm({
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          name: formData.name,
-          email: formData.email,
+          name: data.name,
+          email: data.email,
           imageUrl: uploadedImageUrl,
           imagePublicId: uploadedImagePublicId,
         }),
@@ -128,20 +150,16 @@ export default function CustomerForm({
           method: "DELETE",
         });
       }
-    } finally {
-      setIsSubmitting(false);
-    }
+    } 
   };
 
   return (
-    <div className="border rounded p-4 mb-4 bg-gray-50">
+      <div className="border rounded p-4 mb-4 bg-gray-50">
       <h3 className="font-medium mb-2">Add New Customer</h3>
-      <form onSubmit={handleSubmit}>
+      <form onSubmit={handleSubmit(onSubmit)}>
+       
+
         {/* Image Upload */}
-         {/* Show Validation Error */}
-         {error && (
-          <p className="text-red-600 text-sm mb-2">{error}</p>
-        )}
         <div>
           <label className="block text-sm font-medium mb-1">
             Profile Image
@@ -174,15 +192,12 @@ export default function CustomerForm({
                 onClick={() => fileInputRef.current?.click()}
                 className="px-3 py-1.5 text-sm border rounded hover:bg-gray-50"
               >
-                {formData.image ? "Change Image" : "Upload Image"}
+                {formValues.image ? "Change Image" : "Upload Image"}
               </button>
-              {formData.image && (
+              {formValues.image && (
                 <button
                   type="button"
-                  onClick={() => {
-                    setFormData({ ...formData, image: null });
-                    setPreviewImage(null);
-                  }}
+                  onClick={removeImage}
                   className="ml-2 px-3 py-1.5 text-sm text-red-600 hover:text-red-800"
                 >
                   Remove
@@ -190,6 +205,9 @@ export default function CustomerForm({
               )}
             </div>
           </div>
+          {errors.image && (
+            <p className="mt-1 text-xs text-red-600">{errors.image.message as string}</p>
+          )}
           <p className="mt-1 text-xs text-gray-500">
             JPEG, PNG, WEBP (Max. 1MB)
           </p>
@@ -207,29 +225,30 @@ export default function CustomerForm({
 
         {/* Fields */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+          {/* Name Field */}
           <div>
             <label className="block text-sm font-medium mb-1">Name</label>
             <input
               type="text"
               className="w-full p-2 border rounded"
-              value={formData.name}
-              onChange={(e) =>
-                setFormData({ ...formData, name: e.target.value })
-              }
-             
+              {...register("name")}
             />
+            {errors.name && (
+              <p className="mt-1 text-xs text-red-600">{errors.name.message}</p>
+            )}
           </div>
+
+          {/* Email Field */}
           <div>
             <label className="block text-sm font-medium mb-1">Email</label>
             <input
-             
+              type="email"
               className="w-full p-2 border rounded"
-              value={formData.email}
-              onChange={(e) =>
-                setFormData({ ...formData, email: e.target.value })
-              }
-            
+              {...register("email")}
             />
+            {errors.email && (
+              <p className="mt-1 text-xs text-red-600">{errors.email.message}</p>
+            )}
           </div>
         </div>
 

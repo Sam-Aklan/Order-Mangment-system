@@ -11,7 +11,7 @@ export const customerSchema = z.object({
   name: z.string().min(1, { message: "Name is required." }),
   email: z.string().email({ message: "Invalid email address." }),
   image: z
-    .any()
+    .instanceof(File)
     .refine((file) => file === null || file instanceof File, {
       message: "Image must be a file.",
     })
@@ -24,7 +24,8 @@ export const customerSchema = z.object({
         message: "Image must be JPEG, PNG, or WEBP and less than 5MB.",
       }
     )
-    .nullable(),
+    .nullable()
+    .optional(),
 });
 
 export type CustomerInput = z.infer<typeof customerSchema>;

@@ -183,4 +183,7 @@ export type customerType ={
     imagePublicId:string|null,
 }
 
+export type CustomerEditType = customerType &{
+  image?:File
+}
 

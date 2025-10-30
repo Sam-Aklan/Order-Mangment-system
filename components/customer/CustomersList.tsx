@@ -7,6 +7,7 @@ import Modal from "../Modal";
 import CustomerView from "./CustomerView";
 import CustomerForm from "./CustomerForm";
 import Pagination from "../Pagination";
+import { useCustomerListManagement } from "@/lib/hooks/useCustomerListManagement.ts";
 
 interface CustomerListProps {
   customers: customerType[];
@@ -19,30 +20,32 @@ export default function CustomerList({
   searchParams,
   totalPages,
 }: CustomerListProps) {
-  const router = useRouter();
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  // const router = useRouter();
+  // const [isModalOpen, setIsModalOpen] = useState(false);
 
-  const handlePageChange = (newPage: number) => {
-    const params = new URLSearchParams();
-    if (searchParams.q) params.set("q", searchParams.q);
-    params.set("page", String(newPage));
+  // const handlePageChange = (newPage: number) => {
+  //   const params = new URLSearchParams();
+  //   if (searchParams.q) params.set("q", searchParams.q);
+  //   params.set("page", String(newPage));
 
-    router.push(`/dashboard/customers?${params.toString()}`);
-  };
-  const handlePageSizeChange = (newSize: number) => {
-    const params = new URLSearchParams();
-    if (searchParams.q) params.set("q", searchParams.q);
-    params.set("page","1");
-    params.set("limit",String(newSize))
-    router.push(`/dashboard/customers?${params.toString()}`);
-  };
+  //   router.push(`/dashboard/customers?${params.toString()}`);
+  // };
+  // const handlePageSizeChange = (newSize: number) => {
+  //   const params = new URLSearchParams();
+  //   if (searchParams.q) params.set("q", searchParams.q);
+  //   params.set("page","1");
+  //   params.set("limit",String(newSize))
+  //   router.push(`/dashboard/customers?${params.toString()}`);
+  // };
+
+  const {actions, isModalOpen, currentPage,currentPageSize} =useCustomerListManagement({searchParams})
 
   return (
     <div className="p-6 space-y-4 w-full">
       <div className="flex justify-between items-center">
         <h1 className="text-2xl font-bold">Customer List</h1>
         <button
-          onClick={() => setIsModalOpen(true)}
+          onClick={() => actions.openModal()}
           className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600"
         >
           Add Customer
@@ -52,11 +55,11 @@ export default function CustomerList({
       {isModalOpen && (
         <Modal
           isOpen={isModalOpen}
-          onClose={() => setIsModalOpen(false)}
+          onClose={() => actions.closeModal()}
           title="Create New Customer"
         >
-          {/* 🔹 Replace with a <CustomerForm /> like ProductForm if you have it */}
-          <CustomerForm onClose={()=>setIsModalOpen(false)}/>
+         
+          <CustomerForm onClose={()=> actions.closeModal()}/>
         </Modal>
       )}
 
@@ -71,11 +74,11 @@ export default function CustomerList({
 
      
       <Pagination
-      currentPage={searchParams.page}
+      currentPage={currentPage}
       totalPages={totalPages}
-      pageSize={searchParams.pageSize||5}
-      onPageChange={handlePageChange}
-      onPageSizeChange={handlePageSizeChange}/>
+      pageSize={currentPageSize||5}
+      onPageChange={actions.handlePageChange}
+      onPageSizeChange={actions.handlePageSizeChange}/>
     </div>
   );
 }

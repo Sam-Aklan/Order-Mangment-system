@@ -1,45 +1,78 @@
 "use client";
 
-import { ChangeEvent, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { customerSchema, CustomerInput } from "@/lib/validations/customerValidation";
-import { customerType } from "@/lib/actions/customers";
+import { CustomerEditType } from "@/lib/actions/customers";
+import { SubmitHandler, useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 
 export default function CustomerEditForm({
   customer,
   
 }: {
-  customer: customerType;
+  customer: CustomerEditType;
 }) {
   const router = useRouter();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const [formData, setFormData] = useState<CustomerInput>({
-    name: customer.name,
-    email: customer.email,
-    image: null, // for new file uploads
-  });
-
   const [previewImage, setPreviewImage] = useState<string | null>(
     customer.imageUrl || null
   );
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+
   const [deleteImage, setDeleteImage] = useState(false);
 
-  // ✅ Handle file change
-  const handleImageChange = (e: ChangeEvent<HTMLInputElement>) => {
+   const {
+    register,
+    handleSubmit,
+    formState: { errors, isSubmitting,defaultValues },
+    setValue,
+    watch,
+    trigger,
+    setError: setFormError,
+    clearErrors
+  } = useForm<CustomerInput>({
+    resolver: zodResolver(customerSchema),
+    defaultValues: {
+      name: customer.name,
+      email: customer.email,
+      image:  null,
+    }
+  });
+  // Watch form values
+  const formValues = watch();
+
+  // Handle file change
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0];
-      setFormData({ ...formData, image: file });
-      if(previewImage) setDeleteImage(true);
+      setValue("image", file);
+      clearErrors("image");
 
+      if (previewImage && previewImage !== customer.image?.name) {
+        setDeleteImage(true);
+      }
+
+      // Create preview
       const reader = new FileReader();
       reader.onload = () => {
         setPreviewImage(reader.result as string);
       };
       reader.readAsDataURL(file);
+
+      // Trigger validation for image field
+      trigger("image");
+    }
+  };
+
+  const removeImage = () => {
+    setValue("image", null);
+    setPreviewImage(null);
+    setDeleteImage(true);
+    clearErrors("image");
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
     }
   };
 
@@ -62,20 +95,11 @@ export default function CustomerEditForm({
   };
   };
 
-  // ✅ Submit with Cloudinary & API
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsSubmitting(true);
-    setError(null);
-
-    // Validate with Zod
-    const result = customerSchema.safeParse(formData);
-    if (!result.success) {
-      setError(result.error.issues.map(i=>i.message).join(", "));
-      setIsSubmitting(false);
-      return;
-    }
-
+  
+  const onSubmit:SubmitHandler<CustomerInput>= async (data) => {
+   
+   
+  if(JSON.stringify(data) === JSON.stringify(defaultValues)) return
     let uploadedImageUrl: string | null = customer.imageUrl;
     let uploadedImagePublicId: string | null = customer.imagePublicId;
 
@@ -83,9 +107,9 @@ export default function CustomerEditForm({
      
 
       // Case 2: user uploaded a new image
-      if (formData.image) {
+      if (data.image) {
         
-       const {url,publicId}= await uploadToCloudinary(formData.image)
+       const {url,publicId}= await uploadToCloudinary(data.image)
        uploadedImageUrl =url
        uploadedImagePublicId = publicId
       
@@ -97,8 +121,8 @@ export default function CustomerEditForm({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           id:customer.id,
-          name: formData.name,
-          email: formData.email,
+          name: data.name,
+          email: data.email,
           imageUrl: uploadedImageUrl,
           imagePublicId: uploadedImagePublicId,
           deleteOldImage:deleteImage
@@ -112,21 +136,20 @@ export default function CustomerEditForm({
      
     } catch (err) {
       console.error("Error updating customer:", err);
-      setError("Something went wrong while updating the customer.");
-    } finally {
-      setIsSubmitting(false);
-    }
+    } 
   };
 
   return (
     <div className="border rounded p-4 mb-4 bg-gray-50">
       <h3 className="font-medium mb-2">Edit Customer</h3>
-      <form onSubmit={handleSubmit}>
-        {error && <p className="text-red-600 text-sm mb-2">{error}</p>}
+      <form onSubmit={handleSubmit(onSubmit)}>
+      
 
         {/* Image Upload */}
         <div>
-          <label className="block text-sm font-medium mb-1">Profile Image</label>
+          <label className="block text-sm font-medium mb-1">
+            Profile Image
+          </label>
           <div className="flex items-center gap-4">
             <div className="relative w-24 h-24 border rounded overflow-hidden bg-gray-100">
               {previewImage ? (
@@ -155,16 +178,12 @@ export default function CustomerEditForm({
                 onClick={() => fileInputRef.current?.click()}
                 className="px-3 py-1.5 text-sm border rounded hover:bg-gray-50"
               >
-                {formData.image ? "Change Image" : "Upload New Image"}
+                {formValues.image ? "Change Image" : "Upload New Image"}
               </button>
-              {(previewImage || formData.image) && (
+              {previewImage && (
                 <button
                   type="button"
-                  onClick={() => {
-                    setFormData({ ...formData, image: null });
-                    setPreviewImage(null);
-                    setDeleteImage(true);
-                  }}
+                  onClick={removeImage}
                   className="ml-2 px-3 py-1.5 text-sm text-red-600 hover:text-red-800"
                 >
                   Remove
@@ -172,6 +191,9 @@ export default function CustomerEditForm({
               )}
             </div>
           </div>
+          {errors.image && (
+            <p className="mt-1 text-xs text-red-600">{errors.image.message as string}</p>
+          )}
           <p className="mt-1 text-xs text-gray-500">
             JPEG, PNG, WEBP (Max. 1MB)
           </p>
@@ -179,29 +201,30 @@ export default function CustomerEditForm({
 
         {/* Fields */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+          {/* Name Field */}
           <div>
             <label className="block text-sm font-medium mb-1">Name</label>
             <input
               type="text"
               className="w-full p-2 border rounded"
-              value={formData.name}
-              onChange={(e) =>
-                setFormData({ ...formData, name: e.target.value })
-              }
-              required
+              {...register("name")}
             />
+            {errors.name && (
+              <p className="mt-1 text-xs text-red-600">{errors.name.message}</p>
+            )}
           </div>
+
+          {/* Email Field */}
           <div>
             <label className="block text-sm font-medium mb-1">Email</label>
             <input
               type="email"
               className="w-full p-2 border rounded"
-              value={formData.email}
-              onChange={(e) =>
-                setFormData({ ...formData, email: e.target.value })
-              }
-              required
+              {...register("email")}
             />
+            {errors.email && (
+              <p className="mt-1 text-xs text-red-600">{errors.email.message}</p>
+            )}
           </div>
         </div>
 
@@ -209,7 +232,7 @@ export default function CustomerEditForm({
         <div className="flex justify-end gap-2 mt-4">
           <button
             type="button"
-            // onClick={onClose}
+            onClick={() => router.back()}
             className="px-4 py-2 border rounded"
             disabled={isSubmitting}
           >

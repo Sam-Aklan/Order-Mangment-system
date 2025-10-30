@@ -27,7 +27,7 @@ export async function GET(req: NextRequest) {
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const product = await createProduct({...body,stock:parseInt(body.stock)});
+    const product = await createProduct({...body,price:parseFloat(body.price),stock:parseInt(body.stock)});
     return NextResponse.json(product, { status: 201 });
   } catch (error) {
     return NextResponse.json(

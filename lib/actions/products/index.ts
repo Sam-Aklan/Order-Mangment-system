@@ -187,6 +187,8 @@ export type productType = {
     imagePublicId:string|null;
 }
 
+export type ProductEditType =productType &{ image?:File |null}
+
 export type categoryType= "ELECTRONICS"|
 "CLOTHING"|
 "FOOD"|
