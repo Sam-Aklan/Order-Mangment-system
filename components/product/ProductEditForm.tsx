@@ -7,6 +7,7 @@ import { categoryType, ProductEditType, productType } from "@/lib/actions/produc
 import { productSchema,ProductInput } from "@/lib/validations/productValidation";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {  SubmitHandler, useForm } from "react-hook-form";
+import { useProductForm } from "@/lib/hooks/useProductForm";
 
 export default function ProductEditForm({
   product,
@@ -15,138 +16,142 @@ export default function ProductEditForm({
   product: ProductEditType;
   // onClose: () => void;
 }) {
-  const fileInputRef = useRef<HTMLInputElement>(null);
-  const router = useRouter();
+  // const fileInputRef = useRef<HTMLInputElement>(null);
+  // const router = useRouter();
 
-  const [previewImage, setPreviewImage] = useState<string | null>(
-    product.imageUrl || null
-  );
-  const [deleteOldImage, setDeleteOldImage] = useState(false);
-  const [uploadProgress, setUploadProgress] = useState(0);
+  // const [previewImage, setPreviewImage] = useState<string | null>(
+  //   product.imageUrl || null
+  // );
+  // const [deleteOldImage, setDeleteOldImage] = useState(false);
+  // const [uploadProgress, setUploadProgress] = useState(0);
 
-  const {
-    register,
-    handleSubmit,
-    formState: { errors,isSubmitting,defaultValues },
-    setValue,
-    watch,
-    trigger,
+  // const {
+  //   register,
+  //   handleSubmit,
+  //   formState: { errors,isSubmitting,defaultValues },
+  //   setValue,
+  //   watch,
+  //   trigger,
     
-  } = useForm<ProductInput>({
-    resolver: zodResolver(productSchema),
-    defaultValues: {
-      name: product.name,
-      price: String(product.price),
-      category: product.category as categoryType,
-      stock: String(product.stock),
-      image: null
-    }
-  });
+  // } = useForm<ProductInput>({
+  //   resolver: zodResolver(productSchema),
+  //   defaultValues: {
+  //     name: product.name,
+  //     price: String(product.price),
+  //     category: product.category as categoryType,
+  //     stock: String(product.stock),
+  //     image: null
+  //   }
+  // });
 
-  // Watch form values
-  const formValues = watch();
+  // // Watch form values
+  // const formValues = watch();
 
-  const handleImageChange = (e: ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      const file = e.target.files[0];
-      setValue("image", file);
+  // const handleImageChange = (e: ChangeEvent<HTMLInputElement>) => {
+  //   if (e.target.files && e.target.files[0]) {
+  //     const file = e.target.files[0];
+  //     setValue("image", file);
       
-      if (previewImage !==product.image?.name ) setDeleteOldImage(true); // Mark old image for deletion
+  //     if (previewImage !==product.image?.name ) setDeleteOldImage(true); // Mark old image for deletion
 
-      // Create preview
-      const reader = new FileReader();
-      reader.onload = () => {
-        setPreviewImage(reader.result as string);
-      };
-      reader.readAsDataURL(file);
+  //     // Create preview
+  //     const reader = new FileReader();
+  //     reader.onload = () => {
+  //       setPreviewImage(reader.result as string);
+  //     };
+  //     reader.readAsDataURL(file);
       
-      // Trigger validation for image field
-      trigger("image");
-    }
-  };
+  //     // Trigger validation for image field
+  //     trigger("image");
+  //   }
+  // };
 
-  const removeImage = () => {
-    setValue("image", null);
-    setPreviewImage(null);
-    setDeleteOldImage(true);
-    if (fileInputRef.current) {
-      fileInputRef.current.value = "";
-    }
-  };
+  // const removeImage = () => {
+  //   setValue("image", null);
+  //   setPreviewImage(null);
+  //   setDeleteOldImage(true);
+  //   if (fileInputRef.current) {
+  //     fileInputRef.current.value = "";
+  //   }
+  // };
 
-  const uploadToCloudinary = async (file: File): Promise<{url: string, publicId: string}> => {
-    const url = `https://api.cloudinary.com/v1_1/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME}/upload`;
-    const data = new FormData();
-    data.append("file", file);
-    data.append("upload_preset", process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET || "");
+  // const uploadToCloudinary = async (file: File): Promise<{url: string, publicId: string}> => {
+  //   const url = `https://api.cloudinary.com/v1_1/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME}/upload`;
+  //   const data = new FormData();
+  //   data.append("file", file);
+  //   data.append("upload_preset", process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET || "");
 
-    const res = await fetch(url, {
-      method: "POST",
-      body: data,
-    });
+  //   const res = await fetch(url, {
+  //     method: "POST",
+  //     body: data,
+  //   });
 
     
-    if (!res.ok) throw new Error("Cloudinary upload failed");
-    const result = await res.json();
-  return {
-    url: result.secure_url as string,
-    publicId: result.public_id as string,
-  };
-  };
+  //   if (!res.ok) throw new Error("Cloudinary upload failed");
+  //   const result = await res.json();
+  // return {
+  //   url: result.secure_url as string,
+  //   publicId: result.public_id as string,
+  // };
+  // };
 
 
-  const deleteFromCloudinary = async (publicId: string) => {
-    await fetch(`/api/cloudinary/${publicId}`, {
-      method: "DELETE",
-      headers: { "Content-Type": "application/json" },
-      // body: JSON.stringify({ publicId }),
-    });
-  };
+  // const deleteFromCloudinary = async (publicId: string) => {
+  //   await fetch(`/api/cloudinary/${publicId}`, {
+  //     method: "DELETE",
+  //     headers: { "Content-Type": "application/json" },
+  //     // body: JSON.stringify({ publicId }),
+  //   });
+  // };
 
-  const onSubmit:SubmitHandler<ProductInput> = async (data) => {
+  // const onSubmit:SubmitHandler<ProductInput> = async (data) => {
    
-    if(JSON.stringify(data) === JSON.stringify(defaultValues)){
-        console.log("not submitted")
-      return
-    }
+  //   if(JSON.stringify(data) === JSON.stringify(defaultValues)){
+  //       console.log("not submitted")
+  //     return
+  //   }
     
-    let uploaded: {url: string, publicId: string} | null = null;
-    try {
-      // Upload image if replaced
-      if (previewImage && deleteOldImage && data.image) {
-        uploaded=  await uploadToCloudinary(data.image)
+  //   let uploaded: {url: string, publicId: string} | null = null;
+  //   try {
+  //     // Upload image if replaced
+  //     if (previewImage && deleteOldImage && data.image) {
+  //       uploaded=  await uploadToCloudinary(data.image)
        
-      }
+  //     }
 
-      // Update DB
-      const response = await fetch(`/api/product/`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          id:product.id,
-          name: data.name,
-          price: data.price,
-          category: data.category,
-          stock: data.stock,
-          imageUrl:uploaded?.url||null,
-          imagePublicId:uploaded?.publicId ||null,
-          deleteOldImage
+  //     // Update DB
+  //     const response = await fetch(`/api/product/`, {
+  //       method: "PUT",
+  //       headers: { "Content-Type": "application/json" },
+  //       body: JSON.stringify({
+  //         id:product.id,
+  //         name: data.name,
+  //         price: data.price,
+  //         category: data.category,
+  //         stock: data.stock,
+  //         imageUrl:uploaded?.url||null,
+  //         imagePublicId:uploaded?.publicId ||null,
+  //         deleteOldImage
 
-        }),
-      });
+  //       }),
+  //     });
 
-      if (!response.ok) throw new Error("Failed to update product");
+  //     if (!response.ok) throw new Error("Failed to update product");
 
-      router.refresh();
-      // onClose();
-    } catch (err) {
-      console.error("Error updating product:", err);
-      // if new upload succeeded but DB update failed → delete Cloudinary image here
-      if(uploaded?.publicId) await deleteFromCloudinary(uploaded.publicId);
-    } finally {
+  //     router.refresh();
+  //     // onClose();
+  //   } catch (err) {
+  //     console.error("Error updating product:", err);
+  //     // if new upload succeeded but DB update failed → delete Cloudinary image here
+  //     if(uploaded?.publicId) await deleteFromCloudinary(uploaded.publicId);
+  //   } finally {
     
-    }
-  };
+  //   }
+  // };
+
+  const {actions,fileInputRef,formMethods,previewImage,uploadProgress,formValues,router} =useProductForm({product,mode:"edit"})
+  const {onSubmit,handleImageChange,removeImage,} = actions
+  const {register,handleSubmit,formState:{errors,isSubmitting,}} = formMethods
 
   return (
      <div className="border rounded p-4 mb-4 bg-gray-50 w-3xl">

@@ -11,17 +11,8 @@ import {zodResolver} from '@hookform/resolvers/zod'
 
 export default function ProductForm({ 
   onClose,
-  searchParams 
 }: {
   onClose: () => void;
-  searchParams: {
-    q?: string;
-    page: number;
-    limit?: number;
-    minPrice?: number;
-    maxPrice?: number;
-    category?: string;
-  };
 }) {
   const router = useRouter();
   const fileInputRef = useRef<HTMLInputElement>(null);

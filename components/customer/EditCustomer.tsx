@@ -1,12 +1,9 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
-import { useRouter } from "next/navigation";
+
 import Image from "next/image";
-import { customerSchema, CustomerInput } from "@/lib/validations/customerValidation";
 import { CustomerEditType } from "@/lib/actions/customers";
-import { SubmitHandler, useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
+import { useCustomerForm } from "@/lib/hooks/useCustomerForm";
 
 export default function CustomerEditForm({
   customer,
@@ -14,131 +11,133 @@ export default function CustomerEditForm({
 }: {
   customer: CustomerEditType;
 }) {
-  const router = useRouter();
-  const fileInputRef = useRef<HTMLInputElement>(null);
+  // const router = useRouter();
+  // const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const [previewImage, setPreviewImage] = useState<string | null>(
-    customer.imageUrl || null
-  );
+  // const [previewImage, setPreviewImage] = useState<string | null>(
+  //   customer.imageUrl || null
+  // );
 
-  const [deleteImage, setDeleteImage] = useState(false);
+  // const [deleteImage, setDeleteImage] = useState(false);
 
-   const {
-    register,
-    handleSubmit,
-    formState: { errors, isSubmitting,defaultValues },
-    setValue,
-    watch,
-    trigger,
-    setError: setFormError,
-    clearErrors
-  } = useForm<CustomerInput>({
-    resolver: zodResolver(customerSchema),
-    defaultValues: {
-      name: customer.name,
-      email: customer.email,
-      image:  null,
-    }
-  });
-  // Watch form values
-  const formValues = watch();
+  //  const {
+  //   register,
+  //   handleSubmit,
+  //   formState: { errors, isSubmitting,defaultValues },
+  //   setValue,
+  //   watch,
+  //   trigger,
+  //   clearErrors
+  // } = useForm<CustomerInput>({
+  //   resolver: zodResolver(customerSchema),
+  //   defaultValues: {
+  //     name: customer.name,
+  //     email: customer.email,
+  //     image:  null,
+  //   }
+  // });
+  // // Watch form values
+  // const formValues = watch();
 
-  // Handle file change
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      const file = e.target.files[0];
-      setValue("image", file);
-      clearErrors("image");
+  // // Handle file change
+  // const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  //   if (e.target.files && e.target.files[0]) {
+  //     const file = e.target.files[0];
+  //     setValue("image", file);
+  //     clearErrors("image");
 
-      if (previewImage && previewImage !== customer.image?.name) {
-        setDeleteImage(true);
-      }
+  //     if (previewImage && previewImage !== customer.image?.name) {
+  //       setDeleteImage(true);
+  //     }
 
-      // Create preview
-      const reader = new FileReader();
-      reader.onload = () => {
-        setPreviewImage(reader.result as string);
-      };
-      reader.readAsDataURL(file);
+  //     // Create preview
+  //     const reader = new FileReader();
+  //     reader.onload = () => {
+  //       setPreviewImage(reader.result as string);
+  //     };
+  //     reader.readAsDataURL(file);
 
-      // Trigger validation for image field
-      trigger("image");
-    }
-  };
+  //     // Trigger validation for image field
+  //     trigger("image");
+  //   }
+  // };
 
-  const removeImage = () => {
-    setValue("image", null);
-    setPreviewImage(null);
-    setDeleteImage(true);
-    clearErrors("image");
-    if (fileInputRef.current) {
-      fileInputRef.current.value = "";
-    }
-  };
+  // const removeImage = () => {
+  //   setValue("image", null);
+  //   setPreviewImage(null);
+  //   setDeleteImage(true);
+  //   clearErrors("image");
+  //   if (fileInputRef.current) {
+  //     fileInputRef.current.value = "";
+  //   }
+  // };
 
-  const uploadToCloudinary = async (file: File): Promise<{url: string, publicId: string}> => {
-    const url = `https://api.cloudinary.com/v1_1/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME}/upload`;
-    const data = new FormData();
-    data.append("file", file);
-    data.append("upload_preset", process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET_CUSTOMER || "");
+  // const uploadToCloudinary = async (file: File): Promise<{url: string, publicId: string}> => {
+  //   const url = `https://api.cloudinary.com/v1_1/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME}/upload`;
+  //   const data = new FormData();
+  //   data.append("file", file);
+  //   data.append("upload_preset", process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET_CUSTOMER || "");
 
-    const res = await fetch(url, {
-      method: "POST",
-      body: data,
-    });
+  //   const res = await fetch(url, {
+  //     method: "POST",
+  //     body: data,
+  //   });
 
-    if (!res.ok) throw new Error("Cloudinary upload failed");
-    const result = await res.json();
-  return {
-    url: result.secure_url as string,
-    publicId: result.public_id as string,
-  };
-  };
+  //   if (!res.ok) throw new Error("Cloudinary upload failed");
+  //   const result = await res.json();
+  // return {
+  //   url: result.secure_url as string,
+  //   publicId: result.public_id as string,
+  // };
+  // };
 
   
-  const onSubmit:SubmitHandler<CustomerInput>= async (data) => {
+  // const onSubmit:SubmitHandler<CustomerInput>= async (data) => {
    
    
-  if(JSON.stringify(data) === JSON.stringify(defaultValues)) return
-    let uploadedImageUrl: string | null = customer.imageUrl;
-    let uploadedImagePublicId: string | null = customer.imagePublicId;
+  // if(JSON.stringify(data) === JSON.stringify(defaultValues)) return
+  //   let uploadedImageUrl: string | null = customer.imageUrl;
+  //   let uploadedImagePublicId: string | null = customer.imagePublicId;
 
-    try {
+  //   try {
      
 
-      // Case 2: user uploaded a new image
-      if (data.image) {
+  //     // Case 2: user uploaded a new image
+  //     if (data.image) {
         
-       const {url,publicId}= await uploadToCloudinary(data.image)
-       uploadedImageUrl =url
-       uploadedImagePublicId = publicId
+  //      const {url,publicId}= await uploadToCloudinary(data.image)
+  //      uploadedImageUrl =url
+  //      uploadedImagePublicId = publicId
       
-      }
+  //     }
 
-      // Update DB
-      const response = await fetch(`/api/customers/`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          id:customer.id,
-          name: data.name,
-          email: data.email,
-          imageUrl: uploadedImageUrl,
-          imagePublicId: uploadedImagePublicId,
-          deleteOldImage:deleteImage
-        }),
-      });
+  //     // Update DB
+  //     const response = await fetch(`/api/customers/`, {
+  //       method: "PUT",
+  //       headers: { "Content-Type": "application/json" },
+  //       body: JSON.stringify({
+  //         id:customer.id,
+  //         name: data.name,
+  //         email: data.email,
+  //         imageUrl: uploadedImageUrl,
+  //         imagePublicId: uploadedImagePublicId,
+  //         deleteOldImage:deleteImage
+  //       }),
+  //     });
 
-      if (!response.ok) throw new Error("Failed to update customer");
+  //     if (!response.ok) throw new Error("Failed to update customer");
 
-      router.push("/dashboard/customers?page=1");
-      router.refresh();
+  //     router.push("/dashboard/customers?page=1");
+  //     router.refresh();
      
-    } catch (err) {
-      console.error("Error updating customer:", err);
-    } 
-  };
+  //   } catch (err) {
+  //     console.error("Error updating customer:", err);
+  //   } 
+  // };
 
+  const {actions,errors,fileInputRef,formMethods,formValues,isSubmitting,previewImage,uploadProgress,router} =useCustomerForm({customer,mode:"edit",})
+  const {register,handleSubmit} = formMethods
+  const {onSubmit,handleImageChange,removeImage} = actions
   return (
     <div className="border rounded p-4 mb-4 bg-gray-50">
       <h3 className="font-medium mb-2">Edit Customer</h3>

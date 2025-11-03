@@ -183,8 +183,8 @@ export type productType = {
     price: number;
     stock: number;
     category:string;
-    imageUrl:string|null;
-    imagePublicId:string|null;
+    imageUrl?:string|null;
+    imagePublicId?:string|null;
 }
 
 export type ProductEditType =productType &{ image?:File |null}

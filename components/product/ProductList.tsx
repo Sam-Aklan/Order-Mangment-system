@@ -1,8 +1,6 @@
 "use client";
 
 import { productType } from "@/lib/actions/products";
-import { useRouter } from "next/navigation";
-import { useCallback, useState } from "react";
 import ProductForm from "./ProductForm";
 import Modal from "../Modal";
 import ProductView from "./ProductView";
@@ -105,7 +103,7 @@ const {actions,currentPage,isDeleting,isModalOpen,pageSize,productToDelete} =use
 
           <ProductForm 
             onClose={() => actions.openModal()} 
-            searchParams={searchParams}
+            // searchParams={searchParams}
           />
         </Modal>
       )}

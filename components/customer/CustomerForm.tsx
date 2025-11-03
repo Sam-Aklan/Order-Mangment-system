@@ -1,157 +1,155 @@
 "use client";
 
-import { ChangeEvent, useRef, useState } from "react";
-import { useRouter } from "next/navigation";
+
+import { useCustomerForm } from "@/lib/hooks/useCustomerForm";
 import Image from "next/image";
-import { CustomerInput, customerSchema } from "@/lib/validations/customerValidation";
-import { SubmitHandler, useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
 
 export default function CustomerForm({
   onClose,
 }: {
   onClose: () => void;
 }) {
-  const router = useRouter();
-  const fileInputRef = useRef<HTMLInputElement>(null);
+  // const router = useRouter();
+  // const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const [previewImage, setPreviewImage] = useState<string | null>(null);
-  const [uploadProgress, setUploadProgress] = useState(0);
-  const [error, setError] = useState<string | null>(null);
+  // const [previewImage, setPreviewImage] = useState<string | null>(null);
+  // const [uploadProgress, setUploadProgress] = useState(0);
 
-   const {
-    register,
-    handleSubmit,
-    formState: { errors,isSubmitting },
-    setValue,
-    watch,
-    trigger,
-    setError: setFormError,
-    clearErrors
-  } = useForm<CustomerInput>({
-    resolver: zodResolver(customerSchema),
-    defaultValues: {
-      name: "",
-      email: "",
-      image: null
-    }
-  });
+  //  const {
+  //   register,
+  //   handleSubmit,
+  //   formState: { errors,isSubmitting },
+  //   setValue,
+  //   watch,
+  //   trigger,
+  //   clearErrors
+  // } = useForm<CustomerInput>({
+  //   resolver: zodResolver(customerSchema),
+  //   defaultValues: {
+  //     name: "",
+  //     email: "",
+  //     image: null
+  //   }
+  // });
 
-  // Watch form values
-  const formValues = watch();
+  // // Watch form values
+  // const formValues = watch();
 
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      const file = e.target.files[0];
-      setValue("image", file);
-      clearErrors("image");
+  // const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  //   if (e.target.files && e.target.files[0]) {
+  //     const file = e.target.files[0];
+  //     setValue("image", file);
+  //     clearErrors("image");
 
-      // Create preview
-      const reader = new FileReader();
-      reader.onload = () => {
-        setPreviewImage(reader.result as string);
-      };
-      reader.readAsDataURL(file);
+  //     // Create preview
+  //     const reader = new FileReader();
+  //     reader.onload = () => {
+  //       setPreviewImage(reader.result as string);
+  //     };
+  //     reader.readAsDataURL(file);
 
-      // Trigger validation for image field
-      trigger("image");
-    }
-  };
+  //     // Trigger validation for image field
+  //     trigger("image");
+  //   }
+  // };
 
-  const removeImage = () => {
-    setValue("image", null);
-    setPreviewImage(null);
-    clearErrors("image");
-    if (fileInputRef.current) {
-      fileInputRef.current.value = "";
-    }
-  };
+  // const removeImage = () => {
+  //   setValue("image", null);
+  //   setPreviewImage(null);
+  //   clearErrors("image");
+  //   if (fileInputRef.current) {
+  //     fileInputRef.current.value = "";
+  //   }
+  // };
 
 
-  const uploadToCloudinary = async (file: File): Promise<{url: string, publicId: string}> => {
-    const url = `https://api.cloudinary.com/v1_1/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME}/upload`;
-    const data = new FormData();
-    data.append("file", file);
-    data.append("upload_preset", process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET_CUSTOMER || "");
+  // const uploadToCloudinary = async (file: File): Promise<{url: string, publicId: string}> => {
+  //   const url = `https://api.cloudinary.com/v1_1/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME}/upload`;
+  //   const data = new FormData();
+  //   data.append("file", file);
+  //   data.append("upload_preset", process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET_CUSTOMER || "");
 
-    const res = await fetch(url, {
-      method: "POST",
-      body: data,
-    });
+  //   const res = await fetch(url, {
+  //     method: "POST",
+  //     body: data,
+  //   });
 
-    if (!res.ok) throw new Error("Cloudinary upload failed");
-    const result = await res.json();
-  return {
-    url: result.secure_url as string,
-    publicId: result.public_id as string,
-  };
-  };
+  //   if (!res.ok) throw new Error("Cloudinary upload failed");
+  //   const result = await res.json();
+  // return {
+  //   url: result.secure_url as string,
+  //   publicId: result.public_id as string,
+  // };
+  // };
 
-  // ✅ Handle file change
+  // // ✅ Handle file change
   
 
-  // ✅ Submit form
-  const onSubmit:SubmitHandler<CustomerInput> = async (data) => {
+  // // ✅ Submit form
+  // const onSubmit:SubmitHandler<CustomerInput> = async (data) => {
   
 
 
-    let uploadedImageUrl: string | null = null;
-    let uploadedImagePublicId: string | null = null;
+  //   let uploadedImageUrl: string | null = null;
+  //   let uploadedImagePublicId: string | null = null;
    
-    try {
-      // If image selected → upload to Cloudinary
-      if (data.image) {
-       const{url,publicId}= await uploadToCloudinary(data.image)
-       uploadedImageUrl =url;
-       uploadedImagePublicId = publicId;
-        const imageData = new FormData();
-        imageData.append("file", data.image);
-        imageData.append("upload_preset", process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET!);
+  //   try {
+  //     // If image selected → upload to Cloudinary
+  //     if (data.image) {
+  //      const{url,publicId}= await uploadToCloudinary(data.image)
+  //      uploadedImageUrl =url;
+  //      uploadedImagePublicId = publicId;
+  //       const imageData = new FormData();
+  //       imageData.append("file", data.image);
+  //       imageData.append("upload_preset", process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET!);
 
-        const res = await fetch(
-          `https://api.cloudinary.com/v1_1/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME}/image/upload`,
-          {
-            method: "POST",
-            body: imageData,
-          }
-        );
+  //       const res = await fetch(
+  //         `https://api.cloudinary.com/v1_1/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME}/image/upload`,
+  //         {
+  //           method: "POST",
+  //           body: imageData,
+  //         }
+  //       );
 
-        const uploadResult = await res.json();
-        uploadedImageUrl = uploadResult.secure_url;
-        uploadedImagePublicId = uploadResult.public_id;
-      }
+  //       const uploadResult = await res.json();
+  //       uploadedImageUrl = uploadResult.secure_url;
+  //       uploadedImagePublicId = uploadResult.public_id;
+  //     }
 
-      // Call your API to save customer
+  //     // Call your API to save customer
 
-      const response = await fetch("/api/customers", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          name: data.name,
-          email: data.email,
-          imageUrl: uploadedImageUrl,
-          imagePublicId: uploadedImagePublicId,
-        }),
-      });
+  //     const response = await fetch("/api/customers", {
+  //       method: "POST",
+  //       headers: {
+  //         "Content-Type": "application/json",
+  //       },
+  //       body: JSON.stringify({
+  //         name: data.name,
+  //         email: data.email,
+  //         imageUrl: uploadedImageUrl,
+  //         imagePublicId: uploadedImagePublicId,
+  //       }),
+  //     });
 
-      if (!response.ok) throw new Error("Failed to create customer");
+  //     if (!response.ok) throw new Error("Failed to create customer");
 
-      router.push("/dashboard/customers?page=1");
-      router.refresh();
-      onClose();
-    } catch (error) {
-      console.error("Error creating customer:", error);
+  //     router.push("/dashboard/customers?page=1");
+  //     router.refresh();
+  //     onClose();
+  //   } catch (error) {
+  //     console.error("Error creating customer:", error);
 
-      // Rollback uploaded image if DB failed
-      if (uploadedImagePublicId) {
-        await fetch(`/api/cloudinary/${uploadedImagePublicId}`, {
-          method: "DELETE",
-        });
-      }
-    } 
-  };
+  //     // Rollback uploaded image if DB failed
+  //     if (uploadedImagePublicId) {
+  //       await fetch(`/api/cloudinary/${uploadedImagePublicId}`, {
+  //         method: "DELETE",
+  //       });
+  //     }
+  //   } 
+  // };
+  const {actions,formMethods,formValues,fileInputRef,isSubmitting,previewImage,uploadProgress, errors}=useCustomerForm({onClose,mode:"create"})
+  const {register,handleSubmit,} = formMethods
+  const {onSubmit,removeImage,handleImageChange} = actions
 
   return (
       <div className="border rounded p-4 mb-4 bg-gray-50">

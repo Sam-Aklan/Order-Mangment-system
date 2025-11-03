@@ -1,5 +1,3 @@
-
-import NewOrderFilters from "@/components/order/NewOrderFilters";
 import ClientOrderForm from "@/components/order/OrderForm";
 import ProductFilter from "@/components/product/ProductFilter";
 import { getCustomers } from "@/lib/actions/customers";
@@ -38,7 +36,7 @@ export default async function CreateOrder({searchParams}:ordersPageProps) {
       <>
       {/* <NewOrderFilters searchParams={{q,category,maxPrice,minPrice}} currentPage={page}/> */}
       <ProductFilter basePath="/dashboard/order/new" currentPage={page} searchParams={{category,maxPrice,minPrice,q}}/>
-      <ClientOrderForm products={products} customers={customers}  searchParams={{q,category,maxPrice,minPrice}} page={page} totalPages={totalPages}/>
+      <ClientOrderForm products={products} customers={customers}  searchParams={{q,category,maxPrice,minPrice,limit:offset}} page={page} totalPages={totalPages}/>
       </>
     )
 }
