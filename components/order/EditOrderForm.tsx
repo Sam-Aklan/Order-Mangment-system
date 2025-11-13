@@ -9,7 +9,7 @@ import ProductPickerModal from "./ProductPickerModal";
 import CustomerSelect from "./CustomerSelect";
 import ProductCard from "../product/ProductCard";
 import { useOrderStore } from "@/lib/store/OrderStore";
-import { useEditOrderForm } from "@/lib/hooks/useEditOrderForm";
+import { useEditOrderForm } from "@/lib/hooks/order/useEditOrderForm";
 
 interface Props {
   order: orderType,

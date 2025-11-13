@@ -6,7 +6,7 @@ import Modal from "../Modal";
 import ProductView from "./ProductView";
 import ConfirmModal from "../ConfirmModal";
 import Pagination from "../Pagination";
-import { useProductListManagement } from "@/lib/hooks/useProductsListManagement.ts";
+import { useProductListManagement } from "@/lib/hooks/product/useProductsListManagement.ts";
 
 interface productsListProps {
   products: productType[];

@@ -4,7 +4,7 @@ import { productType } from "@/lib/actions/products";
 import {useState} from "react";
 import Modal from "../Modal";
 import { useRouter } from "next/navigation";
-import { useOrderForm } from "@/lib/hooks/useOrderForm";
+import { useOrderForm } from "@/lib/hooks/order/useOrderForm";
 import Pagination from "../Pagination";
 
 type createOrderType = {

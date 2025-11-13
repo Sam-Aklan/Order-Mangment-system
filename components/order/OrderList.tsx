@@ -3,7 +3,7 @@
 import { ordersType } from "@/lib/actions/orders";
 import Link from "next/link";
 import ConfirmModal from "../ConfirmModal";
-import { useOrdersPagination } from "@/lib/hooks/useOrderPagination";
+import { useOrdersPagination } from "@/lib/hooks/order/useOrderPagination";
 
 
 export function OrdersList({

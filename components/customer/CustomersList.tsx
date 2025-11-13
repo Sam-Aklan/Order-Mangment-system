@@ -7,7 +7,7 @@ import Modal from "../Modal";
 import CustomerView from "./CustomerView";
 import CustomerForm from "./CustomerForm";
 import Pagination from "../Pagination";
-import { useCustomerListManagement } from "@/lib/hooks/useCustomerListManagement.ts";
+import { useCustomerListManagement } from "@/lib/hooks/customer/useCustomerListManagement.ts";
 
 interface CustomerListProps {
   customers: customerType[];

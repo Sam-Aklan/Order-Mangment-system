@@ -3,7 +3,7 @@
 
 import Image from "next/image";
 import { CustomerEditType } from "@/lib/actions/customers";
-import { useCustomerForm } from "@/lib/hooks/useCustomerForm";
+import { useCustomerForm } from "@/lib/hooks/customer/useCustomerForm";
 
 export default function CustomerEditForm({
   customer,

@@ -1,6 +1,6 @@
 "use client";
 
-import { useCustomerFilters } from "@/lib/hooks/useCustomersFilters";
+import { useCustomerFilters } from "@/lib/hooks/customer/useCustomersFilters";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 

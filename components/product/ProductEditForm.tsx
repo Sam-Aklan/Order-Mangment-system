@@ -7,7 +7,7 @@ import { categoryType, ProductEditType, productType } from "@/lib/actions/produc
 import { productSchema,ProductInput } from "@/lib/validations/productValidation";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {  SubmitHandler, useForm } from "react-hook-form";
-import { useProductForm } from "@/lib/hooks/useProductForm";
+import { useProductForm } from "@/lib/hooks/product/useProductForm";
 
 export default function ProductEditForm({
   product,

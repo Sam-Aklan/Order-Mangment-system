@@ -1,6 +1,6 @@
 "use client";
 
-import {  useOrderFilters } from "@/lib/hooks/useOrderFilters";
+import {  useOrderFilters } from "@/lib/hooks/order/useOrderFilters";
 import { useEffect } from "react";
 
 export function OrderFilters({

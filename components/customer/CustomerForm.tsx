@@ -1,7 +1,7 @@
 "use client";
 
 
-import { useCustomerForm } from "@/lib/hooks/useCustomerForm";
+import { useCustomerForm } from "@/lib/hooks/customer/useCustomerForm";
 import Image from "next/image";
 
 export default function CustomerForm({

@@ -1,6 +1,6 @@
 "use client"
 
-import { useProductFilters } from "@/lib/hooks/useProductFilters";
+import { useProductFilters } from "@/lib/hooks/product/useProductFilters";
 
 const ProductFilter = ({ currentPage, searchParams, basePath }: {
   currentPage: number;
