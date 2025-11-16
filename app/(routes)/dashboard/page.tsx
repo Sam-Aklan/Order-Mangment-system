@@ -42,7 +42,7 @@ export default async function DashboardPage({searchParams}:DashboardPageProps){
    
     return (
         <main className="w-full  flex items-center justify-center flex-col mx-auto p-6 space-y-4 text-black">
-        <h1 className="text-2xl font-bold">Dashboard</h1>
+        <h1 className="text-lg md:text-2xl font-bold">Dashboard</h1>
         <DashboardFilters initialFrom={from} initialTo={to} initialGranularity={granularity}/>
         <DashboardClient initailData={data} />
       </main>

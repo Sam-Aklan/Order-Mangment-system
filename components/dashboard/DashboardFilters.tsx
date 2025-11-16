@@ -26,7 +26,7 @@ export default function DashboardFilters({
     <div className="flex flex-wrap items-end gap-4 bg-white border p-4 rounded-md shadow-sm ">
       {/* From date */}
       <div className="flex flex-col">
-        <label className="text-sm text-gray-600">From</label>
+        <label className=" text-xs md:text-sm text-gray-600">From</label>
         <input
           type="date"
           value={filters.from}
@@ -37,7 +37,7 @@ export default function DashboardFilters({
 
       {/* To date */}
       <div className="flex flex-col">
-        <label className="text-sm text-gray-600">To</label>
+        <label className=" text-xs md:text-sm text-gray-600">To</label>
         <input
           type="date"
           value={filters.to}
@@ -48,11 +48,11 @@ export default function DashboardFilters({
 
       {/* Granularity */}
       <div className="flex flex-col">
-        <label className="text-sm text-gray-600">Granularity</label>
+        <label className=" text-xs md:text-sm text-gray-600">Granularity</label>
         <select
           value={filters.granularity}
           onChange={(e) => actions.setGranularity(e.target.value as "day" | "week" | "month")}
-          className="border rounded p-2"
+          className="border rounded p-2 text-xs"
         >
           <option value="day">Daily</option>
           <option value="week">Weekly</option>
@@ -62,11 +62,11 @@ export default function DashboardFilters({
 
       {/* Status */}
       <div className="flex flex-col">
-        <label className="text-sm text-gray-600">Order Status</label>
+        <label className=" text-xs md:text-sm text-gray-600">Order Status</label>
         <select
           value={filters.status}
           onChange={(e) => actions.setStatus(e.target.value as "PENDING" | "SHIPPED" | "DELIVERED" | "")}
-          className="border rounded p-2"
+          className="border rounded p-2 text-xs md:text-sm"
         >
           <option value="">All</option>
           <option value="PENDING">Pending</option>
@@ -77,7 +77,7 @@ export default function DashboardFilters({
 
       {/* Category */}
       <div className="flex flex-col">
-        <label className="text-sm text-gray-600">Category</label>
+        <label className=" text-xs md:text-sm text-gray-600">Category</label>
         <select
           value={filters.category}
           onChange={(e) => actions.setCategory(e.target.value)}
