@@ -4,7 +4,7 @@ import { useRouter } from 'next/navigation';
 import { customerType } from '@/lib/actions/customers';
 import { productType } from '@/lib/actions/products';
 import { createOrder } from '@/lib/actions/orders';
-import { useOrderStore } from '@/lib/store/OrderStore';
+import { ItemSelection, useOrderStore } from '@/lib/store/OrderStore';
 import { orderSchema } from '@/lib/validations/orderValidation';
 
 interface UseOrderFormProps {
@@ -28,7 +28,7 @@ interface UseOrderFormReturn {
   error: string | null;
   
   // Store state
-  selectedItems: Record<string, any>;
+  selectedItems: Record<string, ItemSelection>;
   total: number;
   isEmpty: boolean;
   
@@ -44,6 +44,7 @@ interface UseOrderFormReturn {
     handleSubmission: () => void;
     clearError: () => void;
     validateOrder: () => boolean;
+    removeProduct: (id: string) => void;
   };
 }
 
@@ -192,6 +193,7 @@ export function useOrderForm({
       clearError,
       clearOrder,
       validateOrder,
+      removeProduct
     },
   };
 }

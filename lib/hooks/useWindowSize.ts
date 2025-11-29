@@ -1,3 +1,5 @@
+"use client"
+
 import { useState, useEffect } from 'react';
 import useDebounce from './useDebounce';
 
@@ -8,8 +10,8 @@ interface WindowSize {
 
 function useWindowSize(debounceDelay = 300) {
   const [windowSize, setWindowSize] = useState<WindowSize>({
-    width: window?.innerWidth||0,
-    height: window?.innerHeight||0,
+    width:0,
+    height: 0,
   });
 
   const debouncedWindowSize = useDebounce(windowSize, debounceDelay);

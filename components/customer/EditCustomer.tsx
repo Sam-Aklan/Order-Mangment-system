@@ -1,251 +1,147 @@
-"use client";
+"use client"
 
+import React from 'react'
+import { Button } from '@/components/ui/button'
+import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
+import { FileUpload, FileUploadDropzone, FileUploadItem, FileUploadItemDelete, FileUploadItemMetadata, FileUploadItemPreview, FileUploadList, FileUploadTrigger } from '@/components/ui/file-upload'
+import { CloudUpload, X } from 'lucide-react'
+import { Input } from '@/components/ui/input'
+import { useCustomerForm } from '@/lib/hooks/customer/useCustomerForm'
+import Image from 'next/image'
+import { customerType } from '@/lib/actions/customers'
 
-import Image from "next/image";
-import { CustomerEditType } from "@/lib/actions/customers";
-import { useCustomerForm } from "@/lib/hooks/customer/useCustomerForm";
-
-export default function CustomerEditForm({
-  customer,
-  
-}: {
-  customer: CustomerEditType;
-}) {
-  // const router = useRouter();
-  // const fileInputRef = useRef<HTMLInputElement>(null);
-
-  // const [previewImage, setPreviewImage] = useState<string | null>(
-  //   customer.imageUrl || null
-  // );
-
-  // const [deleteImage, setDeleteImage] = useState(false);
-
-  //  const {
-  //   register,
-  //   handleSubmit,
-  //   formState: { errors, isSubmitting,defaultValues },
-  //   setValue,
-  //   watch,
-  //   trigger,
-  //   clearErrors
-  // } = useForm<CustomerInput>({
-  //   resolver: zodResolver(customerSchema),
-  //   defaultValues: {
-  //     name: customer.name,
-  //     email: customer.email,
-  //     image:  null,
-  //   }
-  // });
-  // // Watch form values
-  // const formValues = watch();
-
-  // // Handle file change
-  // const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-  //   if (e.target.files && e.target.files[0]) {
-  //     const file = e.target.files[0];
-  //     setValue("image", file);
-  //     clearErrors("image");
-
-  //     if (previewImage && previewImage !== customer.image?.name) {
-  //       setDeleteImage(true);
-  //     }
-
-  //     // Create preview
-  //     const reader = new FileReader();
-  //     reader.onload = () => {
-  //       setPreviewImage(reader.result as string);
-  //     };
-  //     reader.readAsDataURL(file);
-
-  //     // Trigger validation for image field
-  //     trigger("image");
-  //   }
-  // };
-
-  // const removeImage = () => {
-  //   setValue("image", null);
-  //   setPreviewImage(null);
-  //   setDeleteImage(true);
-  //   clearErrors("image");
-  //   if (fileInputRef.current) {
-  //     fileInputRef.current.value = "";
-  //   }
-  // };
-
-  // const uploadToCloudinary = async (file: File): Promise<{url: string, publicId: string}> => {
-  //   const url = `https://api.cloudinary.com/v1_1/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME}/upload`;
-  //   const data = new FormData();
-  //   data.append("file", file);
-  //   data.append("upload_preset", process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET_CUSTOMER || "");
-
-  //   const res = await fetch(url, {
-  //     method: "POST",
-  //     body: data,
-  //   });
-
-  //   if (!res.ok) throw new Error("Cloudinary upload failed");
-  //   const result = await res.json();
-  // return {
-  //   url: result.secure_url as string,
-  //   publicId: result.public_id as string,
-  // };
-  // };
-
-  
-  // const onSubmit:SubmitHandler<CustomerInput>= async (data) => {
-   
-   
-  // if(JSON.stringify(data) === JSON.stringify(defaultValues)) return
-  //   let uploadedImageUrl: string | null = customer.imageUrl;
-  //   let uploadedImagePublicId: string | null = customer.imagePublicId;
-
-  //   try {
-     
-
-  //     // Case 2: user uploaded a new image
-  //     if (data.image) {
-        
-  //      const {url,publicId}= await uploadToCloudinary(data.image)
-  //      uploadedImageUrl =url
-  //      uploadedImagePublicId = publicId
-      
-  //     }
-
-  //     // Update DB
-  //     const response = await fetch(`/api/customers/`, {
-  //       method: "PUT",
-  //       headers: { "Content-Type": "application/json" },
-  //       body: JSON.stringify({
-  //         id:customer.id,
-  //         name: data.name,
-  //         email: data.email,
-  //         imageUrl: uploadedImageUrl,
-  //         imagePublicId: uploadedImagePublicId,
-  //         deleteOldImage:deleteImage
-  //       }),
-  //     });
-
-  //     if (!response.ok) throw new Error("Failed to update customer");
-
-  //     router.push("/dashboard/customers?page=1");
-  //     router.refresh();
-     
-  //   } catch (err) {
-  //     console.error("Error updating customer:", err);
-  //   } 
-  // };
-
-  const {actions,errors,fileInputRef,formMethods,formValues,isSubmitting,previewImage,uploadProgress,router} =useCustomerForm({customer,mode:"edit",})
-  const {register,handleSubmit} = formMethods
-  const {onSubmit,handleImageChange,removeImage} = actions
+const TestEditForm = ({customer}:{customer:customerType}) => {
+   const {formMethods:form,actions, previewImage}= useCustomerForm({mode:'edit',customer})
+   const {onSubmit, handleImageChange, removeImage} = actions
   return (
-    <div className="border rounded p-4 mb-4 bg-gray-50">
-      <h3 className="font-medium mb-2">Edit Customer</h3>
-      <form onSubmit={handleSubmit(onSubmit)}>
-      
-
-        {/* Image Upload */}
-        <div>
-          <label className="block text-sm font-medium mb-1">
-            Profile Image
-          </label>
-          <div className="flex items-center gap-4">
-            <div className="relative w-24 h-24 border rounded overflow-hidden bg-gray-100">
-              {previewImage ? (
-                <Image
-                  src={previewImage}
-                  alt="Preview"
-                  fill
-                  className="object-cover"
-                />
-              ) : (
-                <div className="flex items-center justify-center h-full text-gray-400 text-xs">
-                  No image
-                </div>
+     <Form {...form}>
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 w-full lg:max-w-7xl mx-auto py-2 md:py-10 h-fit md:max-w-3xl lg:h-full overflow-y-auto">
+        
+             <FormField
+              control={form.control}
+              name="image"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Select an Image</FormLabel>
+                  <FormControl>
+            
+                    <div className="space-y-4">
+            
+                      {/* Existing Image Preview (edit mode only) */}
+                      {previewImage &&  (
+                        <div>
+                          <p className="text-sm text-muted-foreground">Current Image</p>
+                          <div className="w-40 h-40 relative">
+                            <Button 
+                            variant={`destructive`} 
+                            size={`icon-sm`} 
+                            className="absolute right-2 top-2 p-0  z-5 w-5 h-5 rounded-full" 
+                            type="button"
+                            onClick={removeImage}>
+                              <X width={10} height={10} />
+                            </Button>
+                          <Image
+                            src={previewImage}
+                            alt="Current Product"
+                            className="rounded-md border  w-full object-cover"
+                            sizes="(max-width:768px) 10rem,"
+                            fill
+                          />
+                          </div>
+                        </div>
+                      )}
+            
+                      {/* File Upload */}
+                      <FileUpload
+                        value={field.value ? [field.value] : undefined}
+                        onValueChange={handleImageChange}
+                        accept="image/*"
+                        multiple={false}
+                      >
+                        <FileUploadDropzone className="flex-row flex-wrap border-dotted text-center">
+                          <CloudUpload className="size-4" />
+                          Drag and drop or
+                          <FileUploadTrigger asChild>
+                            <Button variant="link" size="sm" className="p-0">
+                              choose files
+                            </Button>
+                          </FileUploadTrigger>
+                          to upload
+                        </FileUploadDropzone>
+            
+                        <FileUploadList>
+                          {field.value && (
+                            <FileUploadItem value={field.value}>
+                              <FileUploadItemPreview />
+                              <FileUploadItemMetadata />
+                              <FileUploadItemDelete asChild>
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  className="size-7"
+                                >
+                                  <X />
+                                  <span className="sr-only">Delete</span>
+                                </Button>
+                              </FileUploadItemDelete>
+                            </FileUploadItem>
+                          )}
+                        </FileUploadList>
+                      </FileUpload>
+            
+                    </div>
+            
+                  </FormControl>
+            
+                  <FormDescription>Select an image to upload.</FormDescription>
+                  <FormMessage />
+                </FormItem>
               )}
-            </div>
-            <div>
-              <input
-                type="file"
-                ref={fileInputRef}
-                onChange={handleImageChange}
-                accept="image/*"
-                className="hidden"
-              />
-              <button
-                type="button"
-                onClick={() => fileInputRef.current?.click()}
-                className="px-3 py-1.5 text-sm border rounded hover:bg-gray-50"
-              >
-                {formValues.image ? "Change Image" : "Upload New Image"}
-              </button>
-              {previewImage && (
-                <button
-                  type="button"
-                  onClick={removeImage}
-                  className="ml-2 px-3 py-1.5 text-sm text-red-600 hover:text-red-800"
-                >
-                  Remove
-                </button>
-              )}
-            </div>
-          </div>
-          {errors.image && (
-            <p className="mt-1 text-xs text-red-600">{errors.image.message as string}</p>
+            />
+        
+        <FormField
+          control={form.control}
+          name="name"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Name</FormLabel>
+              <FormControl>
+                <Input 
+                placeholder="customer name"
+                
+                type=""
+                {...field} />
+              </FormControl>
+             
+              <FormMessage />
+            </FormItem>
           )}
-          <p className="mt-1 text-xs text-gray-500">
-            JPEG, PNG, WEBP (Max. 1MB)
-          </p>
-        </div>
-
-        {/* Fields */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-          {/* Name Field */}
-          <div>
-            <label className="block text-sm font-medium mb-1">Name</label>
-            <input
-              type="text"
-              className="w-full p-2 border rounded"
-              {...register("name")}
-            />
-            {errors.name && (
-              <p className="mt-1 text-xs text-red-600">{errors.name.message}</p>
-            )}
-          </div>
-
-          {/* Email Field */}
-          <div>
-            <label className="block text-sm font-medium mb-1">Email</label>
-            <input
-              type="email"
-              className="w-full p-2 border rounded"
-              {...register("email")}
-            />
-            {errors.email && (
-              <p className="mt-1 text-xs text-red-600">{errors.email.message}</p>
-            )}
-          </div>
-        </div>
-
-        {/* Actions */}
-        <div className="flex justify-end gap-2 mt-4">
-          <button
-            type="button"
-            onClick={() => router.back()}
-            className="px-4 py-2 border rounded"
-            disabled={isSubmitting}
-          >
-            Cancel
-          </button>
-          <button
-            type="submit"
-            className="px-4 py-2 bg-blue-500 text-white rounded disabled:opacity-50"
-            disabled={isSubmitting}
-          >
-            {isSubmitting ? "Updating..." : "Update Customer"}
-          </button>
-        </div>
+        />
+        
+        <FormField
+          control={form.control}
+          name="email"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Email</FormLabel>
+              <FormControl>
+                <Input 
+                placeholder="enter your email"
+                
+                type=""
+                {...field} />
+              </FormControl>
+              
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        
+        
+        <Button type="submit">Submit</Button>
       </form>
-    </div>
-  );
+    </Form>
+  )
 }
+
+export default TestEditForm

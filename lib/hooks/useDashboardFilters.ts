@@ -1,74 +1,58 @@
-import { useState, useCallback } from 'react';
-import { useRouter } from 'next/navigation';
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
+import { filtersSchema,filtersSchemaType } from "@/lib/validations/dashbaordVaildation";
+import { useRouter } from "next/navigation";
+import { validDateString } from "../utils";
 
 interface UseDashboardFiltersProps {
   initialFrom?: string;
   initialTo?: string;
   initialGranularity?: "day" | "week" | "month";
   initialStatus?: "PENDING" | "SHIPPED" | "DELIVERED";
-  initialCategory?: string;
-}
-
-interface UseDashboardFiltersReturn {
-  filters: {
-    from: string;
-    to: string;
-    granularity?: "day" | "week" | "month";
-    category: string;
-    status: string;
-  };
-  actions: {
-    setFrom: (value: string) => void;
-    setTo: (value: string) => void;
-    setGranularity: (value: "day" | "week" | "month") => void;
-    setCategory: (value: string) => void;
-    setStatus: (value: string) => void;
-    handleApplyFilters: () => void;
-  };
+  initialCategory?: "ELECTRONICS" | "CLOTHING" | "FOOD" | "BOOKS" | "FURNITURE" | "OTHER";
 }
 
 export function useDashboardFilters({
-  initialFrom,
-  initialTo,
-  initialGranularity,
-  initialCategory,
-  initialStatus
-}: UseDashboardFiltersProps): UseDashboardFiltersReturn {
-  const [from, setFrom] = useState(initialFrom || "");
-  const [to, setTo] = useState(initialTo || "");
-  const [granularity, setGranularity] = useState(initialGranularity);
-  const [category, setCategory] = useState(initialCategory || "");
-  const [status, setStatus] = useState(initialStatus || "");
+    initialCategory,
+    initialFrom,
+    initialGranularity,
+    initialStatus,
+    initialTo
+}:UseDashboardFiltersProps){
+    const router = useRouter()
 
-  const router = useRouter();
+   
 
-  const handleApplyFilters = useCallback(async () => {
-    const query = new URLSearchParams();
-    if (from) query.set("from", from);
-    if (to) query.set("to", to);
-    if (granularity) query.set("granularity", granularity);
-    if (status) query.set("status", status);
-    if (category) query.set("category", category);
+    const form = useForm <filtersSchemaType > ({
+        resolver: zodResolver(filtersSchema),
+        defaultValues: {
+          "from": validDateString(initialFrom),
+          "to": validDateString(initialTo),
+          "status":initialStatus,
+          "category":initialCategory,
+          "granularity":initialGranularity
+        },
+      })
+    
+      function onSubmitFilters(values: filtersSchemaType ) {
+        const {category,from,granularity,status,to} = values
+        try {
+          const query = new URLSearchParams();
+        if (from) query.set("from", from.toDateString());
+        if (to) query.set("to", to.toDateString());
+        if (granularity) query.set("granularity", granularity);
+        if (status) query.set("status", status);
+        if (category) query.set("category", category);
+    
+        router.push(`/dashboard?${query.toString()}`);
+        router.refresh();
+        } catch (error) {
+          console.error("Form submission error", error);
+        
+        }
+      }
 
-    router.push(`/dashboard?${query.toString()}`);
-    router.refresh();
-  }, [from, to, granularity, status, category, router]);
+      return {form,onSubmitFilters}
 
-  return {
-    filters: {
-      from,
-      to,
-      granularity,
-      category,
-      status,
-    },
-    actions: {
-      setFrom,
-      setTo,
-      setGranularity,
-      setCategory,
-      setStatus,
-      handleApplyFilters,
-    },
-  };
+
 }

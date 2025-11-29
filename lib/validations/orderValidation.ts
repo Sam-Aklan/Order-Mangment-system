@@ -25,3 +25,12 @@ export const updateOrderSchema = z.object({
 });
 
 export type updateOrderValidation = z.infer<typeof updateOrderSchema>
+
+export const OrderFiltersSchema = z.object({
+  query: z.string().optional(),
+  from: z.date().optional(),
+  to: z.date().optional(),
+  status:  z.enum(["PENDING", "SHIPPED", "DELIVERED"]).optional(),
+});
+
+export type OrderFiltersSchemaType = z.infer<typeof OrderFiltersSchema>

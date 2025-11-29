@@ -41,6 +41,8 @@ export async function POST(request: Request) {
 export async function PUT(request: Request) {
   try {
     const body = await request.json();
+
+    console.log("body request api", body)
    
     const result = await updateProduct(body.id, {
       name: body.name,

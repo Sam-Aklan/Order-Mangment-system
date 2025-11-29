@@ -1,5 +1,15 @@
 "use client";
 
+import { Button } from "@/components/ui/button";
+import {
+  Select,
+  SelectTrigger,
+  SelectContent,
+  SelectItem,
+  SelectValue,
+} from "@/components/ui/select";
+import { ChevronLeft, ChevronRight, MoreHorizontal } from "lucide-react";
+
 interface PaginationProps {
   currentPage: number;
   totalPages: number;
@@ -15,9 +25,8 @@ export default function Pagination({
   onPageChange,
   onPageSizeChange,
 }: PaginationProps) {
-  if (totalPages <1) return null;
+  if (totalPages < 1) return null;
 
-  // Utility: generate visible page numbers with ellipses
   const getPageNumbers = () => {
     const pages: (number | string)[] = [];
     const maxVisible = 5;
@@ -32,9 +41,7 @@ export default function Pagination({
     if (left > 2) pages.push(1, "...");
     else for (let i = 1; i < left; i++) pages.push(i);
 
-    for (let i = left; i <= right; i++) {
-      pages.push(i);
-    }
+    for (let i = left; i <= right; i++) pages.push(i);
 
     if (right < totalPages - 1) pages.push("...", totalPages);
     else for (let i = right + 1; i <= totalPages; i++) pages.push(i);
@@ -43,60 +50,72 @@ export default function Pagination({
   };
 
   return (
-    <div className="flex flex-col md:flex-row items-center justify-between gap-4 mt-6">
-      {/* Page size dropdown */}
+    <div className="flex flex-col md:flex-row items-center justify-between gap-4 mt-6 w-full">
+      {/* Page size selector */}
       <div className="flex items-center gap-2">
-        <label className="text-sm text-gray-600">Items per page:</label>
-        <select
-          value={pageSize}
-          onChange={(e) => onPageSizeChange(Number(e.target.value))}
-          className="p-1 border rounded"
+        <span className="text-sm text-muted-foreground">Items per page:</span>
+
+        <Select
+          value={String(pageSize)}
+          onValueChange={(v) => onPageSizeChange(Number(v))}
         >
-          {[5, 10, 20, 50].map((size) => (
-            <option key={size} value={size}>
-              {size}
-            </option>
-          ))}
-        </select>
+          <SelectTrigger className="w-[90px]">
+            <SelectValue placeholder="Size" />
+          </SelectTrigger>
+          <SelectContent>
+            {[5, 10, 20, 50].map((size) => (
+              <SelectItem key={size} value={String(size)}>
+                {size}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
       </div>
 
-      {/* Pagination buttons */}
+      {/* Pagination */}
       <div className="flex items-center gap-2 flex-wrap justify-center">
-        <button
+        <Button
+          variant="outline"
+          size="sm"
           onClick={() => onPageChange(currentPage - 1)}
           disabled={currentPage === 1}
-          className="px-3 py-1 border rounded disabled:opacity-50"
+          className="flex items-center gap-1"
         >
-          Previous
-        </button>
+          <ChevronLeft className="h-4 w-4" />
+          Prev
+        </Button>
 
-        {getPageNumbers().map((page, idx) =>
+        {getPageNumbers().map((page, i) =>
           page === "..." ? (
-            <span key={idx} className="px-2">
-              ...
+            <span
+              key={`ellipsis-${i}`}
+              className="px-2 text-muted-foreground"
+            >
+              <MoreHorizontal className="h-4 w-4" />
             </span>
           ) : (
-            <button
+            <Button
               key={page}
+              size="sm"
+              variant={page === currentPage ? "default" : "outline"}
               onClick={() => onPageChange(page as number)}
-              className={`px-3 py-1 border rounded ${
-                page === currentPage
-                  ? "bg-blue-600 text-white font-bold"
-                  : "hover:bg-gray-100"
-              }`}
+              className="min-w-[2.25rem]"
             >
               {page}
-            </button>
+            </Button>
           )
         )}
 
-        <button
+        <Button
+          variant="outline"
+          size="sm"
           onClick={() => onPageChange(currentPage + 1)}
           disabled={currentPage === totalPages}
-          className="px-3 py-1 border rounded disabled:opacity-50"
+          className="flex items-center gap-1"
         >
           Next
-        </button>
+          <ChevronRight className="h-4 w-4" />
+        </Button>
       </div>
     </div>
   );

@@ -16,11 +16,10 @@ export default async function CustomersPage({
 }) {
   const q = (await searchParams).q || "";
   const page = parseInt((await searchParams).page || "1", 10);
-  const pageSize = parseInt((await searchParams).limit ||"3")
+  const pageSize = parseInt((await searchParams).limit ||"5")
 
   const { customers, totalPages } = await getCustomersQuery({ q, page, limit: pageSize});
 
-  console.log("customers", customers,"page size", pageSize)
 
   return (
     <div className="max-w-4xl mx-auto p-6">

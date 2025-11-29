@@ -30,21 +30,21 @@ const DashboardClient = ({initailData}:{initailData:InsightResponse, initialFrom
   const topProductConfig = {
     product:{
       label:"Product",
-      color:"var(--primary)"
+      color:"var(--chart-1)"
     }
   } satisfies ChartConfig
 
   const OrderStatusConfig ={
     shipped:{
-      label:"Shipped",
-      color:"var(--primary)"
+      label:"SHIPPED",
+      color:"var(--chart-1)"
     },
     deliverd:{
-      label:"Deliverd",
+      label:"DELIVERED",
       color:"var(--chart-2)"
     },
     pending:{
-      label:"Pending",
+      label:"PENDING",
       color:"var(--chart-3)"
     }
   } satisfies ChartConfig
@@ -52,18 +52,18 @@ const DashboardClient = ({initailData}:{initailData:InsightResponse, initialFrom
   const orderRevenueConfig = {
     order:{
       label:"Order",
-      color:"var(--primary)"
+      color:"var(--chart-1)"
     },
     revenue:{
       label:"Revenue",
-      color:"var(--secondary)"
+      color:"var(--chart-2)"
     }
   } satisfies ChartConfig
 
   const topCustomersConfig ={
     revenue:{
       label:"Revenue",
-      color:"var(--primary)"
+      color:"var(--chart-1)"
     }
   } satisfies ChartConfig
 
@@ -87,10 +87,10 @@ const DashboardClient = ({initailData}:{initailData:InsightResponse, initialFrom
  } satisfies ChartConfig
 
   return(
-    <div className='p-8 space-y-8 text-black'>
+    <div className='w-full space-y-8 text-black'>
 
        {/* KPI Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6">
+      <div className="w-full min-w-75 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6">
         <KPICard title="Total Orders" value={kpis.totalOrders.toLocaleString()} />
         <KPICard
           title="Total Revenue"
@@ -121,8 +121,8 @@ const DashboardClient = ({initailData}:{initailData:InsightResponse, initialFrom
               <YAxis />
               <ChartTooltip content={<ChartTooltipContent/>} />
               <Legend />
-              <Line type="monotone" dataKey="revenue" stroke="#10B981" name="Revenue ($)" />
-              <Line type="monotone" dataKey="orders" stroke="#3B82F6" name="Orders" />
+              <Line type="monotone" dataKey="revenue"  name="Revenue ($)" fill='var(--chart-1)'  stroke='var(--chart-1)'/>
+              <Line type="monotone" dataKey="orders"  name="Orders" fill='var(--chart-2)' stroke='var(--chart-2)' />
             </LineChart>
           </ChartContainer>
         </ChartCard>
@@ -135,13 +135,14 @@ const DashboardClient = ({initailData}:{initailData:InsightResponse, initialFrom
               <XAxis dataKey="status" />
               <YAxis dataKey="count" />
               <ChartTooltip content={<ChartTooltipContent/>} />
-              <Bar dataKey="count" fill="#6366F1" />
+              <Bar dataKey="count"  />
             </BarChart>
           </ChartContainer>
         </ChartCard>
       </div>
 
-      {/* Top Products */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+
       <ChartCard title="Top Products by Quantity Sold">
         <ChartContainer config={topProductConfig} className='min-h-60 max-h-90 w-full'>
           <BarChart
@@ -154,14 +155,14 @@ const DashboardClient = ({initailData}:{initailData:InsightResponse, initialFrom
             <XAxis dataKey="name"  />
             <YAxis />
             <ChartTooltip content={<ChartTooltipContent/>} />
-            <Bar dataKey="qty" fill="#F59E0B" />
+            <Bar dataKey="qty" fill='var(--chart-1)' />
           </BarChart>
         </ChartContainer>
       </ChartCard>
 
       {/* Top Customers */}
       <ChartCard title="Top Customers by Revenue">
-        <ChartContainer config={topCustomersConfig} className='min-h-60 max-h-100 w-full'>
+        <ChartContainer config={topCustomersConfig} className='min-h-60 max-h-90 w-full '>
           <BarChart
             data={topCustomers.map((c) => ({
               name: c.name,
@@ -172,10 +173,12 @@ const DashboardClient = ({initailData}:{initailData:InsightResponse, initialFrom
             <XAxis dataKey="name"  />
             <YAxis />
             <ChartTooltip content={<ChartTooltipContent/>} />
-            <Bar dataKey="revenue" fill="#10B981" />
+            <Bar dataKey="revenue" fill='var(--chart-2)' />
           </BarChart>
         </ChartContainer>
       </ChartCard>
+      </div>
+      {/* Top Products */}
 
       {/* Top Products by Category */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
@@ -192,7 +195,7 @@ const DashboardClient = ({initailData}:{initailData:InsightResponse, initialFrom
                 <XAxis dataKey="name"  />
                 <YAxis />
                 <ChartTooltip content={<ChartTooltipContent/>} />
-                <Bar dataKey="qty" fill="#3B82F6" />
+                <Bar dataKey="qty" fill={`var(--chart-4)`} />
               </BarChart>
             </ChartContainer>
           </ChartCard>

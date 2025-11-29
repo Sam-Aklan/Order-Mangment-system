@@ -15,11 +15,11 @@ import {
   NavigationMenuLink,
   NavigationMenuList,
 } from "@/components/ui/navigation-menu"
-import { Avatar,AvatarFallback} from "./ui/avatar"
+import { Avatar,AvatarFallback} from "../ui/avatar"
 import useWindowSize from "@/lib/hooks/useWindowSize"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
-import { Sheet,SheetContent,SheetFooter, SheetTrigger } from "@/components/ui/sheet"
+import { Sheet,SheetContent,SheetFooter, SheetTitle, SheetTrigger } from "@/components/ui/sheet"
 import { LayoutDashboardIcon, LogOutIcon, Menu, Package2, ShoppingCart, User } from "lucide-react"
 import { signOut } from "@/lib/auth-client"
 import { useRouter } from "next/navigation"
@@ -41,13 +41,13 @@ const navigationLinks = [
         icon:<Package2/>,
     },
     {
-        title:"Orders",
-        href:"/dashboard/order/customers",
+        title:"Customers",
+        href:"/dashboard/customers",
         icon:<User/>,
     },
 ]
 
-const Navbar = ({userName,userEmail,children}:{userName:string,userEmail:string,children:React.ReactNode}) => {
+const Navbar = ({userName,userEmail,}:{userName:string,userEmail:string,}) => {
    const {isMobile} = useWindowSize()
    const router= useRouter()
    
@@ -58,7 +58,13 @@ const Navbar = ({userName,userEmail,children}:{userName:string,userEmail:string,
   
    return(
    <>
-   {isMobile?<div>
+   {isMobile?<div className=" w-full flex flex-row-reverse justify-between overflow-x-hidden ">
+     <div className="logo-space w-fit p-2">
+            <Avatar>
+                <AvatarFallback>LO</AvatarFallback>
+            </Avatar>
+        </div>
+    <div className="">
         {/* Mobile sidbar navigation menu */}
         <Sheet>
             <SheetTrigger asChild>
@@ -66,7 +72,9 @@ const Navbar = ({userName,userEmail,children}:{userName:string,userEmail:string,
                     <Menu/>
                 </Button>
             </SheetTrigger>
-            <SheetContent side="left">
+            
+            <SheetContent side="left" className="w-full max-w-65">
+                <SheetTitle></SheetTitle>
                 <div className="flex gap-1 flex-col mt-8 mx-2">
 
                 <Avatar className="outline-1">
@@ -99,8 +107,10 @@ const Navbar = ({userName,userEmail,children}:{userName:string,userEmail:string,
             
             </SheetContent>
         </Sheet>
-        {children}
-    </div>:<div className="w-full">
+       
+    </div>
+    </div>
+    :<div className="w-full mt-4 overflow-hidden">
         {/* Desktop Navigation bar */}
 
         <div className="w-full flex justify-evenly items-center">
@@ -148,7 +158,7 @@ const Navbar = ({userName,userEmail,children}:{userName:string,userEmail:string,
             </Avatar>
         </div>
         </div>
-        {children}
+      
     </div>}
    </>) 
    

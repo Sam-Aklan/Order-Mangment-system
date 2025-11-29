@@ -13,7 +13,7 @@ export function KPICard (
 }
 ) {
   return (
-    <Card className="shadow-sm border border-gray-200 rounded-2xl">
+    <Card className="shadow-sm border border-gray-200 rounded-2xl w-full   md:max-w-75 lg:max-w-80 ">
       <CardContent className="p-4 text-center">
         <p className="text-gray-500 text-sm mb-1">{title}</p>
         <p className={`text-2xl font-bold ${accent ?? ""}`}>{value}</p>

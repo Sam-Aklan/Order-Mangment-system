@@ -1,5 +1,6 @@
 
-import Navbar from "@/components/Navbar";
+import Footer from "@/components/layout/Footer";
+import Navbar from "@/components/layout/Navbar";
 import { signOutAction } from "@/lib/actions/auth";
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
@@ -20,7 +21,11 @@ const {email,name} = session.user
   return <>
    <Navbar userEmail={email} userName={name}>
 
-  {children}
    </Navbar>
+   <div className=" w-full">
+
+  {children}
+   </div>
+   <Footer/>
   </>;
 }

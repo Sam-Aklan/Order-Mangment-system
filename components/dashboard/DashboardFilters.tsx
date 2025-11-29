@@ -1,106 +1,227 @@
-"use client";
+"use client"
 
-
-import { useDashboardFilters } from "@/lib/hooks/useDashboardFilters";
+import {
+  cn
+} from "@/lib/utils"
+import {
+  Button
+} from "@/components/ui/button"
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+} from "@/components/ui/form"
+import {
+  format
+} from "date-fns"
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger
+} from "@/components/ui/popover"
+import {
+  Calendar
+} from "@/components/ui/calendar"
+import {
+  Calendar as CalendarIcon
+} from "lucide-react"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue
+} from "@/components/ui/select"
+import useWindowSize from "@/lib/hooks/useWindowSize"
+import FiltersDrawerMobile from "@/components/FiltersDrawerMobile"
+import { useDashboardFilters } from "@/lib/hooks/useDashboardFilters"
 
 interface DashboardFiltersProps {
   initialFrom?: string;
   initialTo?: string;
   initialGranularity?: "day" | "week" | "month";
   initialStatus?: "PENDING" | "SHIPPED" | "DELIVERED";
-  initialCategory?: string;
+  initialCategory?: "ELECTRONICS" | "CLOTHING" | "FOOD" | "BOOKS" | "FURNITURE" | "OTHER";
 }
 
-export default function DashboardFilters({
-  initialFrom,
-  initialTo,
-  initialGranularity,
-  initialCategory,
-  initialStatus
-}: DashboardFiltersProps) {
-  
-  const {actions,filters} =useDashboardFilters({initialCategory,initialFrom,initialGranularity,initialStatus,initialTo})
+export default function DashboardFilters({initialCategory,initialFrom,initialGranularity,initialStatus,initialTo}:DashboardFiltersProps) {
 
-  
+const {isMobile} = useWindowSize()
+
   return (
-    <div className="flex flex-wrap items-end gap-4 bg-white border p-4 rounded-md shadow-sm ">
-      {/* From date */}
-      <div className="flex flex-col">
-        <label className=" text-xs md:text-sm text-gray-600">From</label>
-        <input
-          type="date"
-          value={filters.from}
-          onChange={(e) => actions.setFrom(e.target.value)}
-          className="border rounded p-2 w-48"
-        />
-      </div>
-
-      {/* To date */}
-      <div className="flex flex-col">
-        <label className=" text-xs md:text-sm text-gray-600">To</label>
-        <input
-          type="date"
-          value={filters.to}
-          onChange={(e) => actions.setTo(e.target.value)}
-          className="border rounded p-2 w-48"
-        />
-      </div>
-
-      {/* Granularity */}
-      <div className="flex flex-col">
-        <label className=" text-xs md:text-sm text-gray-600">Granularity</label>
-        <select
-          value={filters.granularity}
-          onChange={(e) => actions.setGranularity(e.target.value as "day" | "week" | "month")}
-          className="border rounded p-2 text-xs"
-        >
-          <option value="day">Daily</option>
-          <option value="week">Weekly</option>
-          <option value="month">Monthly</option>
-        </select>
-      </div>
-
-      {/* Status */}
-      <div className="flex flex-col">
-        <label className=" text-xs md:text-sm text-gray-600">Order Status</label>
-        <select
-          value={filters.status}
-          onChange={(e) => actions.setStatus(e.target.value as "PENDING" | "SHIPPED" | "DELIVERED" | "")}
-          className="border rounded p-2 text-xs md:text-sm"
-        >
-          <option value="">All</option>
-          <option value="PENDING">Pending</option>
-          <option value="SHIPPED">Shipped</option>
-          <option value="DELIVERED">Delivered</option>
-        </select>
-      </div>
-
-      {/* Category */}
-      <div className="flex flex-col">
-        <label className=" text-xs md:text-sm text-gray-600">Category</label>
-        <select
-          value={filters.category}
-          onChange={(e) => actions.setCategory(e.target.value)}
-          className="border rounded p-2"
-        >
-          <option value="">All Categories</option>
-          <option value="ELECTRONICS">Electronics</option>
-          <option value="CLOTHING">Clothing</option>
-          <option value="FOOD">Food</option>
-          <option value="BOOKS">Books</option>
-          <option value="FURNITURE">Furniture</option>
-          <option value="OTHER">Other</option>
-        </select>
-      </div>
-
-      {/* Apply Button */}
-      <button
-        onClick={actions.handleApplyFilters}
-      
-        className={`px-4 py-2 rounded text-white font-medium bg-primary `}
-      >
-        Apply
-      </button>
+    <div className="md:w-full h-fit">
+      {
+        isMobile?<FiltersDrawerMobile drawerTitle="Dashboard filters">
+          <FormFilters initialCategory={initialCategory} initialFrom={initialFrom} initialGranularity={initialGranularity} initialStatus={initialStatus} initialTo={initialTo}/>
+        </FiltersDrawerMobile>
+        :<FormFilters initialCategory={initialCategory} initialFrom={initialFrom} initialGranularity={initialGranularity} initialStatus={initialStatus} initialTo={initialTo}/>
+      }
+   
     </div>
-  );
+  )
 }
+
+const FormFilters = ({initialCategory,initialFrom,initialGranularity,initialStatus,initialTo}:DashboardFiltersProps)=> {
+
+  const{form,onSubmitFilters}=useDashboardFilters({initialCategory,initialFrom,initialGranularity,initialStatus,initialTo})
+
+return (<Form {...form} >
+      <form onSubmit={form.handleSubmit(onSubmitFilters)} className=" filters-form flex flex-col">
+
+        <div className="filters__wraper">
+      <FormField
+      control={form.control}
+      name="from"
+      render={({ field }) => (
+        <FormItem className="flex flex-col ">
+          <FormLabel>From</FormLabel>
+          <Popover>
+            <PopoverTrigger asChild className="w-full max-w-150 min-w-60">
+              <FormControl>
+                <Button
+                  variant={"outline"}
+                  className={cn(
+                    "w-[240px] pl-3 text-left font-normal",
+                    !field.value && "text-muted-foreground"
+                  )}
+                >
+                  {field.value ? (
+                    format(field.value, "PPP")
+                  ) : (
+                    <span>Pick a date</span>
+                  )}
+                  <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                </Button>
+              </FormControl>
+            </PopoverTrigger>
+            <PopoverContent className="w-auto p-0" align="start">
+              <Calendar
+                mode="single"
+                selected={field.value}
+                onSelect={field.onChange}
+                initialFocus
+              />
+            </PopoverContent>
+          </Popover>
+        </FormItem>
+      )}
+    />
+        
+      <FormField
+      control={form.control}
+      name="to"
+      render={({ field }) => (
+        <FormItem className="flex flex-col">
+          <FormLabel>To</FormLabel>
+          <Popover>
+            <PopoverTrigger asChild className="w-full max-w-150 min-w-60">
+              <FormControl>
+                <Button
+                  variant={"outline"}
+                  className={cn(
+                    "w-[240px] pl-3 text-left font-normal",
+                    !field.value && "text-muted-foreground"
+                  )}
+                >
+                  {field.value ? (
+                    format(field.value, "PPP")
+                  ) : (
+                    <span>Pick a date</span>
+                  )}
+                  <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                </Button>
+              </FormControl>
+            </PopoverTrigger>
+            <PopoverContent className="w-auto p-0" align="start">
+              <Calendar
+                mode="single"
+                selected={field.value}
+                onSelect={field.onChange}
+                initialFocus
+              />
+            </PopoverContent>
+          </Popover>
+        </FormItem>
+      )}
+    />
+        
+        <FormField
+          control={form.control}
+          name="granularity"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Granularity</FormLabel>
+              <Select onValueChange={field.onChange} defaultValue={field.value}>
+                <FormControl>
+                  <SelectTrigger className="w-full max-w-150 min-w-60">
+                    <SelectValue placeholder="Select a granularity" />
+                  </SelectTrigger>
+                </FormControl>
+                <SelectContent>
+                   <SelectItem value="day">Daily</SelectItem>
+          <SelectItem value="week">Weekly</SelectItem>
+          <SelectItem value="month">Monthly</SelectItem>
+                </SelectContent>
+              </Select>
+            </FormItem>
+          )}
+        />
+        
+        <FormField
+          control={form.control}
+          name="category"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Category</FormLabel>
+              <Select onValueChange={field.onChange} defaultValue={field.value}>
+                <FormControl>
+                  <SelectTrigger className="w-full max-w-150 min-w-60">
+                    <SelectValue placeholder="Select a Category" />
+                  </SelectTrigger>
+                </FormControl>
+                <SelectContent>
+                 {/* <SelectItem value="">All Categories</SelectItem> */}
+          <SelectItem value="ELECTRONICS">Electronics</SelectItem>
+          <SelectItem value="CLOTHING">Clothing</SelectItem>
+          <SelectItem value="FOOD">Food</SelectItem>
+          <SelectItem value="BOOKS">Books</SelectItem>
+          <SelectItem value="FURNITURE">Furniture</SelectItem>
+          <SelectItem value="OTHER">Other</SelectItem>
+                </SelectContent>
+              </Select>
+            </FormItem>
+          )}
+        />
+        
+        <FormField
+          control={form.control}
+          name="status"
+          render={({ field }) => (
+            <FormItem  >
+              <FormLabel>Status</FormLabel>
+              <Select onValueChange={field.onChange} defaultValue={field.value} >
+                <FormControl>
+                  <SelectTrigger className="w-full max-w-150 min-w-60">
+                    <SelectValue placeholder="Select a status" />
+                  </SelectTrigger>
+                </FormControl>
+                <SelectContent>
+                  {/* <SelectItem value="">All</SelectItem> */}
+          <SelectItem value="PENDING">Pending</SelectItem>
+          <SelectItem value="SHIPPED">Shipped</SelectItem>
+          <SelectItem value="DELIVERED">Delivered</SelectItem>
+                </SelectContent>
+              </Select>
+            </FormItem>
+          )}
+        />
+        </div>
+
+        <div>
+        <Button type="submit">Apply</Button>
+        </div>
+
+      </form>
+    </Form>)}
