@@ -1,10 +1,15 @@
 // prisma/seed.ts
+import { auth } from "@/lib/auth";
 import { PrismaClient } from "../generated/prisma";
+import { headers } from "next/headers";
 
 const prisma = new PrismaClient();
 
 async function main() {
   console.log("🌱 Seeding database...");
+  // Promise.all()
+
+  // auth.api.signUpEmail({body:{},headers:await headers()})
 
   // Seed Products
   const products = await prisma.product.createMany({
