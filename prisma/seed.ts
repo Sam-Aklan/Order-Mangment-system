@@ -1,13 +1,45 @@
-// prisma/seed.ts
-import { auth } from "@/lib/auth";
-import { PrismaClient } from "../generated/prisma";
-import { headers } from "next/headers";
 
-const prisma = new PrismaClient();
+import { auth } from "@/lib/auth";
+import prisma from "@/lib/prisma";
+
+
+type userType = {
+  
+    body: {
+        email: string;
+        password: string;
+        name: string;
+        role: "user"|"admin";
+    };
+
+}
+
+const users:userType[] = [
+  {
+ body: {
+ email: "feyepa3616@deusa7.com", // required
+ password: "123456789", // required
+ name: "James Smith", // required
+ role: "admin",
+ },
+},
+  {
+ body: {
+ email: "feyepa3616@deusa4.com", // required
+ password: "123456789", // required
+ name: "Jahn Tah", // required
+ role: "user",
+ },
+},
+]
 
 async function main() {
   console.log("🌱 Seeding database...");
-  // Promise.all()
+  await Promise.all(users.map(user=>{
+
+    auth.api.createUser(user)
+
+  }))
 
   // auth.api.signUpEmail({body:{},headers:await headers()})
 

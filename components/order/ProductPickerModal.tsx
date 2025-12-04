@@ -20,12 +20,18 @@ export default function ProductPickerModal({ onClose }: Props) {
   const { selectedItems, setProductQuantity } = useOrderStore();
 
   const fetchProducts = useCallback (async () => {
-    const res = await fetch(
+    try {
+      const res = await fetch(
       `/api/product?q=${encodeURIComponent(search)}&page=${page}&limit=${limit}`
     );
+    
     const data = await res.json();
     setProducts(data.products);
     setTotalPages(data.totalPages);
+    } catch (err:any) {
+      console.log("error",err.message,"code",err.code)
+    }
+    
   }, [search, page])
 
   useEffect(() => {

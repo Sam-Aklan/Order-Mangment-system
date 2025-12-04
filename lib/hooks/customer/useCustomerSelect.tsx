@@ -8,8 +8,9 @@ interface Customer {
 }
 
 interface UseCustomerSelectProps {
-  previousCustomer?: { id: string; name: string,image?:string };
+  previousCustomer?: Customer;
   onChange: (id: string) => void;
+  clearErrors?:()=>void
 }
 
 interface UseCustomerSelectReturn {
@@ -38,11 +39,12 @@ interface UseCustomerSelectReturn {
 
 export function useCustomerSelect({
   previousCustomer,
-  onChange
+  onChange,
+  clearErrors
 }: UseCustomerSelectProps): UseCustomerSelectReturn {
   const [selectedCustomer, setSelectedCustomer] = useState(previousCustomer);
-  const [customers, setCustomers] = useState<Customer[]>(() => 
-    previousCustomer ? [previousCustomer] : []
+  const [customers, setCustomers] = useState<Customer[]>( 
+    previousCustomer ? [previousCustomer] :[]
   );
   const [search, setSearch] = useState("");
   const [pageCursor, setPageCursor] = useState<string | null>(null);
@@ -68,12 +70,17 @@ export function useCustomerSelect({
       if (!res.ok) throw new Error('Failed to fetch customers');
       
       const data = await res.json();
-
+      console.log("initial customers", customers)
       setCustomers((prev) =>{
-        const allcustomers:Customer[] =reset ? [selectedCustomer, ...data.customers] : [...prev, ...data.customers]
+        let allcustomers:Customer[] =[]
+
+        if(reset && selectedCustomer){
+          allcustomers =reset ? [ selectedCustomer,...data.customers] : [...prev, ...data.customers]
+        } else allcustomers = [...prev, ...data.customers]
 
         const customersMap =  new Map<string,Customer>();
-
+        if(!allcustomers) return []
+        
         for (const customer of allcustomers) {
           customersMap.set(customer.id,customer)
           
@@ -127,6 +134,8 @@ export function useCustomerSelect({
     setSelectedCustomer(customer);
     onChange(customer.id);
     setOpen(false);
+    clearErrors?clearErrors():undefined
+    
   }, [onChange]);
 
   // Clear selection

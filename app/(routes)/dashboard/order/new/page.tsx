@@ -31,7 +31,7 @@ export default async function CreateOrder({searchParams}:ordersPageProps) {
  
     const {products,count} = await getProductsQuery(page,offset,q,lowerPrice,higherPrice,category as categoryType);
     const totalPages = Math.max(1, Math.ceil( count / offset));
-
+  
     return (
       <>
     
@@ -40,8 +40,8 @@ export default async function CreateOrder({searchParams}:ordersPageProps) {
       <ProductFilter searchParams={{category:category as categoryType,maxPrice,minPrice,q}}/>
       </div>
       {/* desktop view */}
-      <div className=" hidden md:block">
-       <h2 className="text-2xl font-semibold">Create Order</h2>
+      <div className=" hidden md:block px-4">
+       <h2 className="text-2xl font-semibold px-4 my-4">Create Order</h2>
       <ProductFilter searchParams={{category:category as categoryType,maxPrice,minPrice,q}}/>
       </div>
      
