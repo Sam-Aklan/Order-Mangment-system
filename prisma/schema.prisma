@@ -82,6 +82,7 @@ model Customer {
   email   String  @unique
   imageUrl   String?
   imagePublicId String?
+  createdAt DateTime @default(now())
   orders  Order[]
 }
 
