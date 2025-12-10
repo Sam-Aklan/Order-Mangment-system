@@ -1,7 +1,6 @@
 import CustomerFilter from "@/components/customer/Customers.Filters";
 import CustomerList from "@/components/customer/CustomersList";
 import { getCustomersQuery,} from "@/lib/actions/customers";
-import Link from "next/link";
 
 interface SearchParams {
   q?: string;

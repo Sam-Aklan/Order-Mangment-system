@@ -1,9 +1,9 @@
-import React from 'react'
-import { Button } from '../ui/button'
-import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '../ui/form'
-import { FileUpload, FileUploadDropzone, FileUploadItem, FileUploadItemDelete, FileUploadItemMetadata, FileUploadItemPreview, FileUploadList, FileUploadTrigger } from '../ui/file-upload'
+
+import { Button } from '@/components/ui/button'
+import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
+import { FileUpload, FileUploadDropzone, FileUploadItem, FileUploadItemDelete, FileUploadItemMetadata, FileUploadItemPreview, FileUploadList, FileUploadTrigger } from '@/components/ui/file-upload'
 import { CloudUpload, X } from 'lucide-react'
-import { Input } from '../ui/input'
+import { Input } from '@/components/ui/input'
 import { useCustomerForm } from '@/lib/hooks/customer/useCustomerForm'
 
 const CustomerForm = ({onClose}:{onClose:()=> void}) => {

@@ -2,8 +2,6 @@
 
 import { cloudinaryInst } from "@/lib/config"
 import prisma from "@/lib/prisma"
-import { error } from "console"
-import { success } from "zod"
 
 export const getProducts = async():Promise<productType[]>=>{
    const products = await prisma.product.findMany({

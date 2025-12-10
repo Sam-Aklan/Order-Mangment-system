@@ -1,15 +1,12 @@
 
 import { useMemo, useState, useTransition, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import { customerType } from '@/lib/actions/customers';
-import { productType } from '@/lib/actions/products';
 import { createOrder } from '@/lib/actions/orders';
 import { ItemSelection, useOrderStore } from '@/lib/store/OrderStore';
 import { orderSchema } from '@/lib/validations/orderValidation';
 
 interface UseOrderFormProps {
-  products: productType[];
-  customers: customerType[];
+ 
   searchParams: {
     q?: string;
     category?: string;
@@ -17,8 +14,7 @@ interface UseOrderFormProps {
     maxPrice?: string;
     limit?:number;
   };
-  page: number;
-  totalPages: number;
+ 
 }
 
 interface UseOrderFormReturn {
@@ -49,11 +45,7 @@ interface UseOrderFormReturn {
 }
 
 export function useOrderForm({
-  products,
-  customers,
-  searchParams,
-  page,
-  totalPages
+ searchParams,
 }: UseOrderFormProps): UseOrderFormReturn {
   const router = useRouter();
   const [previewOpen, setPreviewOpen] = useState(false);

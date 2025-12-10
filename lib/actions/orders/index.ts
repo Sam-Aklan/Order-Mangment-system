@@ -96,7 +96,7 @@ export async function getOrders(
   }
   
   const whereStatement={
-    ...(role !=="ADMIN" && {userId:userId}),
+    ...(role !=="admin" && {userId:userId}),
           ...(status?{status}:{}),
         ...(q&&{
           OR:[

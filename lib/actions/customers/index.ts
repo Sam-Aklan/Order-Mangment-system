@@ -4,22 +4,6 @@ import { cloudinaryInst } from "@/lib/config"
 import prisma from "@/lib/prisma"
 import { revalidatePath } from "next/cache"
 
-export const getUserCustomers = async(email:string):Promise<customerType[]>=>{
-
-   return await prisma.customer.findMany({
-        where:{email:email},
-        take:10
-    })
-
-}
-export const getCustomers = async():Promise<customerType[]>=>{
-
-  return  await prisma.customer.findMany({
-        take:10
-    })
-
-}
-
 export const getCustomersCursor = async(limit:number,cursor?:string,q?:string):Promise<customerType[]>=>{
     
 

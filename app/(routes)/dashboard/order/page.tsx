@@ -34,7 +34,7 @@ if(!session?.user) {
 
 const {q,status,fromDate,toDate} = await searchParams
 
-const {orders,} = await getOrders("ADMIN", session?.user.id,1,3,status as "PENDING"|"DELIVERED"|"SHIPPED"|undefined,q,fromDate,toDate)
+const {orders,} = await getOrders(session?.user.role ||'user', session?.user.id,1,3,status as "PENDING"|"DELIVERED"|"SHIPPED"|undefined,q,fromDate,toDate)
  return (
   <div className="max-w-7xl mx-auto mt-10 p-2 md:p-4 relative">
     <div className=" flex justify-between md:hidden">

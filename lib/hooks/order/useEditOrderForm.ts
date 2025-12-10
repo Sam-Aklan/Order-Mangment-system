@@ -1,8 +1,6 @@
 
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
-import { productType } from '@/lib/actions/products';
-import { customerType } from '@/lib/actions/customers';
 import { orderType, statusType, updateOrder } from '@/lib/actions/orders';
 import { useOrderStore } from '@/lib/store/OrderStore';
 
@@ -14,7 +12,7 @@ interface UseEditOrderFormReturn {
   // State
   status: statusType;
   showModal: boolean;
-  isSubmitting: boolean;
+  isPending: boolean;
   
   // Store state
   selectedItems: Record<string, any>;
@@ -27,7 +25,6 @@ interface UseEditOrderFormReturn {
     setCustomer: (id: string) => void;
     handleQuantityChange: (productId: string, quantity: number, stock: number, price: number, name: string, category: string) => void;
     removeProduct: (productId: string) => void;
-    // addProduct: (product: productType, quantity?: number) => void;
     setProductQuantity:(id: string, quantity: number, price: number, itemName: string, stock: number, category: string, isNew?: boolean | undefined) => void;
     handleSubmit: (formData: FormData) => Promise<void>;
     initializeOrder: () => void;
@@ -42,7 +39,7 @@ export function useEditOrderForm({
   const router = useRouter();
   const [status, setStatus] = useState<statusType>(order.status);
   const [showModal, setShowModal] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isPending, startTranstion] = useTransition()
 
   // Order store
   const {
@@ -53,7 +50,6 @@ export function useEditOrderForm({
     setCustomer,
     initializeOrder: initializeStoreOrder,
     getOrderPayload: getStorePayload,
-    clearOrder
   } = useOrderStore();
 
   // Computed total
@@ -134,39 +130,39 @@ export function useEditOrderForm({
       return;
     }
 
-    setIsSubmitting(true);
+   
     
     try {
       const payload = getOrderPayload();
-      
-      const result = await updateOrder({
-        orderId: order.id,
-        customerId: payload.customerId!,
-        status,
-        items: payload.products.map(p => ({ 
-          productId: p.id, 
-          quantity: p.quantity 
-        })),
-      });
+      startTranstion(async()=>{
 
-      if (result.success) {
-        router.push("/dashboard/order");
-        router.refresh();
-      } else {
-        alert("Failed to update order");
-      }
+        const result = await updateOrder({
+          orderId: order.id,
+          customerId: payload.customerId!,
+          status,
+          items: payload.products.map(p => ({ 
+            productId: p.id, 
+            quantity: p.quantity 
+          })),
+        });
+  
+        if (result.success) {
+          router.push("/dashboard/order");
+         
+        } else {
+          alert("Failed to update order");
+        }
+      })
     } catch (error) {
       console.error("Error updating order:", error);
       alert("An error occurred while updating the order");
-    } finally {
-      setIsSubmitting(false);
-    }
+    } 
   }, [validateOrder, getOrderPayload, order.id, status, router]);
 
   return {
     status,
     showModal,
-    isSubmitting,
+    isPending,
     selectedItems,
     total,
     actions: {
