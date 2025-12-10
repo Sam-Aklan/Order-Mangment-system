@@ -8,12 +8,13 @@ interface Customer {
 }
 
 interface Props {
-  value: string;
+  prevousiCustomer?: {id:string, name:string};
   onChange: (id: string) => void;
 }
 
-export default function CustomerSelect({ value, onChange }: Props) {
-  const [customers, setCustomers] = useState<Customer[]>([]);
+export default function CustomerSelect({ prevousiCustomer, onChange }: Props) {
+  const [selectedCustomer, setSelectedCustomer] = useState(prevousiCustomer)
+  const [customers, setCustomers] = useState<Customer[]>(()=>selectedCustomer?[selectedCustomer]:[]);
   const [search, setSearch] = useState("");
   const [pageCursor, setPageCursor] = useState<string | null>(null);
   const [hasMore, setHasMore] = useState(true);
@@ -21,6 +22,8 @@ export default function CustomerSelect({ value, onChange }: Props) {
   const dropdownRef = useRef<HTMLDivElement>(null);
   const listRef = useRef<HTMLDivElement>(null);
   const [loading, setLoading] = useState(false);
+
+  console.log("selected customer", customers)
 
   const fetchCustomers = async (reset = false) => {
     if (!hasMore && !reset) return;
@@ -33,7 +36,8 @@ export default function CustomerSelect({ value, onChange }: Props) {
     const data = await res.json();
 
     setCustomers((prev) =>
-      reset ? data.customers : [...prev, ...data.customers]
+      // to keep the previous customer of the order visible
+      reset ? [selectedCustomer,...data.customers] : [...prev, ...data.customers]
     );
     setPageCursor(data.nextCursor);
     setHasMore(Boolean(data.nextCursor));
@@ -64,14 +68,14 @@ export default function CustomerSelect({ value, onChange }: Props) {
 
   return (
     <div className="relative" ref={dropdownRef}>
-      <input type="hidden" name="customerId" value={value} />
-
+     { selectedCustomer? <input type="hidden" name="customerId" value={selectedCustomer.id} />:undefined
+}
       <button
         type="button"
         onClick={() => setOpen(open=>!open)}
         className="w-full border rounded px-3 py-2 text-left"
       >
-        {customers.find((c) => c.id === value)?.name || "Select Customer"}
+        {customers.find((c) => c.id === selectedCustomer?.id)?.name || "Select Customer"}
       </button>
 
       {open && (
@@ -94,9 +98,10 @@ export default function CustomerSelect({ value, onChange }: Props) {
                 onClick={() => {
                   onChange(c.id);
                   setOpen(false);
+                  setSelectedCustomer(c)
                 }}
                 className={`px-3 py-2 cursor-pointer hover:bg-gray-100 ${
-                  c.id === value ? "bg-blue-100" : ""
+                  c.id === selectedCustomer?.id ? "bg-blue-100" : ""
                 }`}
               >
                 {c.name}

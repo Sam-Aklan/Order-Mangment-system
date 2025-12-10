@@ -1,43 +1,47 @@
 
 "use client";
 
-import { ChangeEvent, useRef, useState } from "react";
+import { ChangeEvent, useEffect, useRef, useState } from "react";
 import { categoryType } from "@/lib/actions/products";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
-import { productSchema } from "@/lib/validations/productValidation";
+import { productSchema,ProductInput } from "@/lib/validations/productValidation";
+import { useForm, type SubmitHandler } from "react-hook-form";
+import {zodResolver} from '@hookform/resolvers/zod'
 
 export default function ProductForm({ 
   onClose,
-  searchParams 
 }: {
   onClose: () => void;
-  searchParams: {
-    q?: string;
-    page: number;
-    limit?: number;
-    minPrice?: number;
-    maxPrice?: number;
-    category?: string;
-  };
 }) {
   const router = useRouter();
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const [formData, setFormData] = useState({
-    name: "",
-    price: "",
-    category: "" as categoryType,
-    stock: "",
-    image:null as File | null
-  });
   const [previewImage, setPreviewImage] = useState<string | null>(null);
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
 
-  const handleImageChange = (e: ChangeEvent<HTMLInputElement>) => {
+ const {register,handleSubmit,setValue,formState:{errors,isSubmitting,},watch, trigger} = useForm<ProductInput>({
+    resolver:zodResolver(productSchema),
+     defaultValues: {
+      name: "",
+      price: "0",
+      category: "" as categoryType,
+      stock: "0",
+      image: null
+    }
+  })
+
+  
+  // Watch form values
+  const formValues = watch();
+
+  useEffect(()=>{
+    console.table(formValues)
+  },[formValues])
+   
+ const handleImageChange = (e: ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0];
-      setFormData({...formData, image: file});
+      setValue("image", file);
       
       // Create preview
       const reader = new FileReader();
@@ -45,6 +49,17 @@ export default function ProductForm({
         setPreviewImage(reader.result as string);
       };
       reader.readAsDataURL(file);
+      
+      // Trigger validation for image field
+      trigger("image");
+    }
+  };
+  
+  const removeImage = () => {
+    setValue("image", null);
+    setPreviewImage(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
     }
   };
 
@@ -59,11 +74,7 @@ export default function ProductForm({
       body: data,
     });
 
-    console.table({
-      name:process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME,
-      preset:process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET
-    })
-
+   
     if (!res.ok) throw new Error("Cloudinary upload failed");
     const result = await res.json();
   return {
@@ -81,30 +92,16 @@ export default function ProductForm({
   };
   
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsSubmitting(true);
+  const onSubmit:SubmitHandler<ProductInput> = async (data) => {
+   
     setUploadProgress(0)
 
     let uploaded: {url: string, publicId: string} | null = null;
 
     try {
-      const parsed = productSchema.safeParse({
-        name: formData.name,
-        price: parseFloat(formData.price),
-        category: formData.category,
-        stock: parseInt(formData.stock, 10),
-        image: formData.image, // File or null
-      });
-      if (!parsed.success) {
-        setIsSubmitting(false);
-        // Collect all error messages
-        const errors = parsed.error.issues.map((i) => i.message).join(", ");
-        alert(errors);
-        return;
-      }
-      if (parsed.data.image) {
-        uploaded = await uploadToCloudinary(parsed.data.image);
+     
+      if (data.image) {
+        uploaded = await uploadToCloudinary(data.image);
         // console.table(uploaded)
       }
   
@@ -114,10 +111,10 @@ export default function ProductForm({
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          name: parsed.data.name,
-          price: parsed.data.price,
-          category: parsed.data.category,
-          stock: parsed.data.stock,
+          name: data.name,
+          price: data.price,
+          category: data.category,
+          stock: data.stock,
           imageUrl: uploaded?.url || null,
           imagePublicId: uploaded?.publicId || null, 
         }),
@@ -130,9 +127,9 @@ export default function ProductForm({
      
       // Redirect with filters
       const params = new URLSearchParams();
-      params.set("q", formData.name);
-      params.set("category", formData.category);
-      params.set("minPrice", String(formData.price));
+      params.set("q", data.name);
+      params.set("category", data.category);
+      params.set("minPrice", String(data.price));
       params.set("page", "1");
 
       router.push(`/dashboard/products?${params.toString()}`);
@@ -148,106 +145,109 @@ export default function ProductForm({
       }
 
       // await deleteFromCloudinary("hello-there")
-    } finally {
-      setIsSubmitting(false);
-    }
+    } 
   };
 
   return (
-    <div className="border rounded p-4 mb-4 bg-gray-50">
+   <div className="border rounded p-4 mb-4 bg-gray-50">
       <h3 className="font-medium mb-2">Add New Product</h3>
-      <form onSubmit={handleSubmit}>
-       {/* Image Upload Section */}
-       <div>
-        <label className="block text-sm font-medium mb-1">Product Image</label>
-        <div className="flex items-center gap-4">
-          <div className="relative w-24 h-24 border rounded overflow-hidden bg-gray-100">
-            {previewImage ? (
-              <Image
-                src={previewImage}
-                alt="Preview"
-                fill
-                className="object-cover"
+      <form onSubmit={handleSubmit(onSubmit)}>
+        {/* Image Upload Section */}
+        <div>
+          <label className="block text-sm font-medium mb-1">Product Image</label>
+          <div className="flex items-center gap-4">
+            <div className="relative w-24 h-24 border rounded overflow-hidden bg-gray-100">
+              {previewImage ? (
+                <Image
+                  src={previewImage}
+                  alt="Preview"
+                  fill
+                  className="object-cover"
+                />
+              ) : (
+                <div className="flex items-center justify-center h-full text-gray-400">
+                  No image
+                </div>
+              )}
+            </div>
+            <div>
+              <input
+                type="file"
+                ref={fileInputRef}
+                onChange={handleImageChange}
+                accept="image/*"
+                className="hidden"
               />
-            ) : (
-              <div className="flex items-center justify-center h-full text-gray-400">
-                No image
-              </div>
-            )}
-          </div>
-          <div>
-            <input
-              type="file"
-              ref={fileInputRef}
-              onChange={handleImageChange}
-              accept="image/*"
-              className="hidden"
-            />
-            <button
-              type="button"
-              onClick={() => fileInputRef.current?.click()}
-              className="px-3 py-1.5 text-sm border rounded hover:bg-gray-50"
-            >
-              {formData.image ? "Change Image" : "Upload Image"}
-            </button>
-            {formData.image && (
               <button
                 type="button"
-                onClick={() => {
-                  setFormData({...formData, image: null});
-                  setPreviewImage(null);
-                }}
-                className="ml-2 px-3 py-1.5 text-sm text-red-600 hover:text-red-800"
+                onClick={() => fileInputRef.current?.click()}
+                className="px-3 py-1.5 text-sm border rounded hover:bg-gray-50"
               >
-                Remove
+                {formValues.image ? "Change Image" : "Upload Image"}
               </button>
-            )}
+              {formValues.image && (
+                <button
+                  type="button"
+                  onClick={removeImage}
+                  className="ml-2 px-3 py-1.5 text-sm text-red-600 hover:text-red-800"
+                >
+                  Remove
+                </button>
+              )}
+            </div>
           </div>
+          {errors.image && (
+            <p className="mt-1 text-xs text-red-600">{errors.image.message as string}</p>
+          )}
+          <p className="mt-1 text-xs text-gray-500">
+            JPEG, PNG or WEBP (Max. 5MB)
+          </p>
         </div>
-        <p className="mt-1 text-xs text-gray-500">
-          JPEG, PNG or WEBP (Max. 5MB)
-        </p>
-      </div>
 
-      {/* Progress Bar */}
-      {uploadProgress > 0 && uploadProgress < 100 && (
-        <div className="w-full bg-gray-200 rounded h-2.5">
-          <div
-            className="bg-blue-600 h-2.5 rounded"
-            style={{ width: `${uploadProgress}%` }}
-          ></div>
-        </div>
-      )}
+        {/* Progress Bar */}
+        {uploadProgress > 0 && uploadProgress < 100 && (
+          <div className="w-full bg-gray-200 rounded h-2.5">
+            <div
+              className="bg-blue-600 h-2.5 rounded"
+              style={{ width: `${uploadProgress}%` }}
+            ></div>
+          </div>
+        )}
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+          {/* Name Field */}
           <div>
             <label className="block text-sm font-medium mb-1">Name</label>
             <input
               type="text"
               className="w-full p-2 border rounded"
-              value={formData.name}
-              onChange={(e) => setFormData({...formData, name: e.target.value})}
-              // required
+              {...register("name")}
             />
+            {errors.name && (
+              <p className="mt-1 text-xs text-red-600">{errors.name.message}</p>
+            )}
           </div>
+
+          {/* Price Field */}
           <div>
             <label className="block text-sm font-medium mb-1">Price</label>
             <input
               type="number"
-              step="0.01"
+              step="0.1"
               className="w-full p-2 border rounded"
-              value={formData.price}
-              onChange={(e) => setFormData({...formData, price: e.target.value})}
-              // required
+              {...register("price")}
             />
+            {errors.price && (
+              <p className="mt-1 text-xs text-red-600">{errors.price.message}</p>
+            )}
           </div>
+
+          {/* Category Field */}
           <div>
             <label className="block text-sm font-medium mb-1">Category</label>
             <select
               className="w-full p-2 border rounded"
-              value={formData.category}
-              onChange={(e) => setFormData({...formData, category: e.target.value as categoryType})}
-              // required
+              {...register("category")}
             >
               <option value="">Select Category</option>
               <option value="ELECTRONICS">ELECTRONICS</option>
@@ -257,27 +257,27 @@ export default function ProductForm({
               <option value="FURNITURE">Furniture</option>
               <option value="OTHER">Other</option>
             </select>
+            {errors.category && (
+              <p className="mt-1 text-xs text-red-600">{errors.category.message}</p>
+            )}
           </div>
+
+          {/* Stock Field */}
           <div className="md:col-span-2">
-            <label className="block text-sm font-medium mb-1">stock</label>
+            <label className="block text-sm font-medium mb-1">Stock</label>
             <input
-              className="w-full p-2 border rounded"
-              value={formData.stock}
               type="number"
               step={1}
-              onChange={(e) => setFormData({...formData, stock: e.target.value})}
+              className="w-full p-2 border rounded"
+              {...register("stock")}
             />
+            {errors.stock && (
+              <p className="mt-1 text-xs text-red-600">{errors.stock.message}</p>
+            )}
           </div>
         </div>
+
         <div className="flex justify-end gap-2">
-          <button
-            type="button"
-            onClick={onClose}
-            className="px-4 py-2 border rounded"
-            disabled={isSubmitting}
-          >
-            Cancel
-          </button>
           <button
             type="submit"
             className="px-4 py-2 bg-blue-500 text-white rounded disabled:opacity-50"

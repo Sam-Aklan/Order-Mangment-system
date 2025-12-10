@@ -1,12 +1,11 @@
 "use client"
 import { customerType } from "@/lib/actions/customers";
-import { createOrder } from "@/lib/actions/orders";
 import { productType } from "@/lib/actions/products";
-import { useMemo, useState, useTransition } from "react";
+import {useState} from "react";
 import Modal from "../Modal";
 import { useRouter } from "next/navigation";
-import { useOrderStore } from "@/lib/store/OrderStore";
-import { orderSchema } from "@/lib/validations/orderValidation";
+import { useOrderForm } from "@/lib/hooks/order/useOrderForm";
+import Pagination from "../Pagination";
 
 type createOrderType = {
     products: productType[],
@@ -18,77 +17,78 @@ type createOrderType = {
       category?: string;
       minPrice?: string;
       maxPrice?: string;
+      limit?:number;
     };
 }
 
 function ClientOrderForm({ products, customers,searchParams,page,totalPages}: createOrderType) {
   const router = useRouter();useState<Record<string, number>>({});
 
-  const [previewOpen, setPreviewOpen] = useState(false);
-  const [isPending, startTransition] = useTransition();
-  const [error, setError] = useState<string | null>(null);
-  const {
-    selectedItems,
-    setProductQuantity,
-    removeProduct,
-    clearOrder,
-    setCustomer,
-  getOrderPayload
-  }=useOrderStore()
+  // const [previewOpen, setPreviewOpen] = useState(false);
+  // const [isPending, startTransition] = useTransition();
+  // const [error, setError] = useState<string | null>(null);
+  // const {
+  //   selectedItems,
+  //   setProductQuantity,
+  //   removeProduct,
+  //   clearOrder,
+  //   setCustomer,
+  // getOrderPayload,
+  // totalPrice
+  // }=useOrderStore()
 
-  const handleQuantityChange = (productId: string, quantity: number, stock: number, price: number,name:string,category:string) => {
-    if (quantity > stock) quantity = stock;
-    if (quantity < 1) {
-      removeProduct(productId)
-      return
-    }
+  // const handleQuantityChange = (productId: string, quantity: number, stock: number, price: number,name:string,category:string) => {
+  //   if (quantity > stock) quantity = stock;
+  //   if (quantity < 1) {
+  //     removeProduct(productId)
+  //     return
+  //   }
 
-    setProductQuantity(productId, quantity,price,name,stock,category,true);
-  };
+  //   setProductQuantity(productId, quantity,price,name,stock,category,true);
+  // };
 
-  const total = useMemo(() => {
-    return Object.entries(selectedItems).reduce((sum, [id,{quantity,price,}]) => {
-      
-      return  sum + price * quantity ;
-    }, 0);
-  }, [selectedItems]);
+  // const total = useMemo(() => totalPrice(), [selectedItems]);
 
-  const isEmpty = Object.keys(selectedItems).length === 0;
+  // const isEmpty = Object.keys(selectedItems).length === 0;
 
 
 
-  const handlePageChange = (newPage: number) => {
-    const params = new URLSearchParams();
+  // const handlePageChange = (newPage: number) => {
+  //   const params = new URLSearchParams();
 
-    if (searchParams.q) params.set("q", searchParams.q);
-    if (searchParams.category) params.set("category", searchParams.category);
-    if (searchParams.minPrice) params.set("minPrice", searchParams.minPrice);
-    if (searchParams.maxPrice) params.set("maxPrice", searchParams.maxPrice);
-    params.set("page", String(newPage));
+  //   if (searchParams.q) params.set("q", searchParams.q);
+  //   if (searchParams.category) params.set("category", searchParams.category);
+  //   if (searchParams.minPrice) params.set("minPrice", searchParams.minPrice);
+  //   if (searchParams.maxPrice) params.set("maxPrice", searchParams.maxPrice);
+  //   params.set("page", String(newPage));
 
-    router.push(`/dashboard/order/new?${params.toString()}`);
-  };
+  //   router.push(`/dashboard/order/new?${params.toString()}`);
+  // };
   
-  const handleSubmission = ()=>{
-    setError(null)
+  // const handleSubmission = ()=>{
+  //   setError(null)
 
-    const payload=getOrderPayload()
-    console.table(payload)
-    const result = orderSchema.safeParse(payload)
-    if(!result.success){
-      setError(result.error.issues[0].message + "*** " + result.error.issues[0].path)
-      return
-    }
-    console.table(result.data)
-    startTransition(async () => {
-      await createOrder({
-        customerId:result.data.customerId,
-        products: result.data.products,
-        total:result.data.total,
-      });
-      clearOrder();
-    });
-  }
+  //   const payload=getOrderPayload()
+  //   console.table(payload)
+  //   const result = orderSchema.safeParse(payload)
+  //   if(!result.success){
+  //     setError(result.error.issues[0].message + "*** " + result.error.issues[0].path)
+  //     return
+  //   }
+  //   console.table(result.data)
+  //   startTransition(async () => {
+  //     await createOrder({
+  //       customerId:result.data.customerId,
+  //       products: result.data.products,
+  //       total:result.data.total,
+  //     });
+  //     clearOrder();
+  //   });
+  // }
+
+  const {selectedItems,previewOpen,error,isPending,isEmpty,total,actions} = useOrderForm({products,customers,searchParams,page,totalPages})
+
+  const {handleSubmission,setPreviewOpen,handlePageChange,handleQuantityChange,setCustomer,clearOrder,handlePageSizeChange } = actions
     return (
       <>
       <div className="space-y-4 max-w-6xl mx-auto mt-10">
@@ -99,7 +99,7 @@ function ClientOrderForm({ products, customers,searchParams,page,totalPages}: cr
           <select name="customerId" className="w-full border rounded p-2"
           onChange={(e)=>setCustomer(e.target.value)}>
             <option value="">Select customer...</option>
-            {customers.map((c: any) => (
+            {customers.map((c) => (
               <option key={c.id} value={c.id}>
                 {c.name} ({c.email})
               </option>
@@ -230,7 +230,7 @@ function ClientOrderForm({ products, customers,searchParams,page,totalPages}: cr
           </div>
       </Modal>
       </div>
-      <div className="flex justify-between pt-2">
+      {/* <div className="flex justify-between pt-2">
         <button
           onClick={() => handlePageChange(page - 1)}
           disabled={page === 1}
@@ -248,7 +248,14 @@ function ClientOrderForm({ products, customers,searchParams,page,totalPages}: cr
         >
           Next
         </button>
-      </div>
+      </div> */}
+      <Pagination
+      currentPage={page}
+      onPageChange={handlePageChange}
+      totalPages={totalPages}
+      onPageSizeChange={handlePageSizeChange}
+      pageSize={searchParams.limit || 5}
+      />
       </>
 
       

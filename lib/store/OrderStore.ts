@@ -7,7 +7,8 @@ type ItemSelection = {
   itemName:string;
   category:string;
   stock:number;
-  isNew?:boolean
+  isNew?:boolean;
+  imageUrl?:string;
 };
  
 type OrderStore = {
@@ -58,7 +59,7 @@ export const useOrderStore = create<OrderStore>((set, get) => ({
         return {
           selectedItems: {
             ...state.selectedItems,
-            [id]: { id, quantity: 0, price, itemName, isNew,stock,category },
+            [id]: { id, quantity: 0, price, itemName, isNew,stock,category, },
           },
         };
       }
@@ -67,7 +68,7 @@ export const useOrderStore = create<OrderStore>((set, get) => ({
       return {
         selectedItems: {
           ...state.selectedItems,
-          [id]: { id, quantity, price, itemName, isNew,stock,category },
+          [id]: { id, quantity, price, itemName, isNew,stock,category, },
         },
       };
     });

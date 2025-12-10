@@ -1,9 +1,7 @@
-
-import NewOrderFilters from "@/components/order/NewOrderFilters";
 import ClientOrderForm from "@/components/order/OrderForm";
 import ProductFilter from "@/components/product/ProductFilter";
 import { getCustomers } from "@/lib/actions/customers";
-import { categoryType, getProducts, getProductsQuery } from "@/lib/actions/products";
+import { categoryType,getProductsQuery } from "@/lib/actions/products";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
@@ -36,8 +34,9 @@ export default async function CreateOrder({searchParams}:ordersPageProps) {
 
     return (
       <>
-      <NewOrderFilters searchParams={{q,category,maxPrice,minPrice}} currentPage={page}/>
-      <ClientOrderForm products={products} customers={customers}  searchParams={{q,category,maxPrice,minPrice}} page={page} totalPages={totalPages}/>
+      {/* <NewOrderFilters searchParams={{q,category,maxPrice,minPrice}} currentPage={page}/> */}
+      <ProductFilter basePath="/dashboard/order/new" currentPage={page} searchParams={{category,maxPrice,minPrice,q}}/>
+      <ClientOrderForm products={products} customers={customers}  searchParams={{q,category,maxPrice,minPrice,limit:offset}} page={page} totalPages={totalPages}/>
       </>
     )
 }

@@ -10,7 +10,6 @@ export default function ProductView({ product,setToDelete }: { product: productT
   name:string,
   id:string
 }| null>> }) {
-  const router = useRouter()
   
 
   

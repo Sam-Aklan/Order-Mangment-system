@@ -1,7 +1,7 @@
 "use client";
 
-import { useRouter } from "next/navigation";
-import { useState } from "react";
+
+import { useDashboardFilters } from "@/lib/hooks/useDashboardFilters";
 
 interface DashboardFiltersProps {
   initialFrom?: string;
@@ -18,26 +18,10 @@ export default function DashboardFilters({
   initialCategory,
   initialStatus
 }: DashboardFiltersProps) {
-  const [from, setFrom] = useState(initialFrom || "");
-  const [to, setTo] = useState(initialTo || "");
-  const [granularity, setGranularity] = useState(initialGranularity);
-  const [category, setCategory] = useState(initialCategory || "")
-  const [status, setStatus] = useState(initialStatus || "")
+  
+  const {actions,filters} =useDashboardFilters({initialCategory,initialFrom,initialGranularity,initialStatus,initialTo})
 
-  const router = useRouter()
-
-  const handleApplyFilters = async () => {
-   const query = new URLSearchParams();
-    if (from) query.set("from", from);
-    if (to) query.set("to", to);
-    if (granularity) query.set("granularity", granularity);
-    if (status) query.set("status", status);
-    if (category) query.set("category", category);
-
-    router.push(`/dashboard?${query.toString()}`);
-    router.refresh()
-    
-  };
+  
   return (
     <div className="flex flex-wrap items-end gap-4 bg-white border p-4 rounded-md shadow-sm ">
       {/* From date */}
@@ -45,8 +29,8 @@ export default function DashboardFilters({
         <label className="text-sm text-gray-600">From</label>
         <input
           type="date"
-          value={from}
-          onChange={(e) => setFrom(e.target.value)}
+          value={filters.from}
+          onChange={(e) => actions.setFrom(e.target.value)}
           className="border rounded p-2 w-48"
         />
       </div>
@@ -56,8 +40,8 @@ export default function DashboardFilters({
         <label className="text-sm text-gray-600">To</label>
         <input
           type="date"
-          value={to}
-          onChange={(e) => setTo(e.target.value)}
+          value={filters.to}
+          onChange={(e) => actions.setTo(e.target.value)}
           className="border rounded p-2 w-48"
         />
       </div>
@@ -66,8 +50,8 @@ export default function DashboardFilters({
       <div className="flex flex-col">
         <label className="text-sm text-gray-600">Granularity</label>
         <select
-          value={granularity}
-          onChange={(e) => setGranularity(e.target.value as "day" | "week" | "month")}
+          value={filters.granularity}
+          onChange={(e) => actions.setGranularity(e.target.value as "day" | "week" | "month")}
           className="border rounded p-2"
         >
           <option value="day">Daily</option>
@@ -80,8 +64,8 @@ export default function DashboardFilters({
       <div className="flex flex-col">
         <label className="text-sm text-gray-600">Order Status</label>
         <select
-          value={status}
-          onChange={(e) => setStatus(e.target.value as "PENDING" | "SHIPPED" | "DELIVERED" | "")}
+          value={filters.status}
+          onChange={(e) => actions.setStatus(e.target.value as "PENDING" | "SHIPPED" | "DELIVERED" | "")}
           className="border rounded p-2"
         >
           <option value="">All</option>
@@ -95,8 +79,8 @@ export default function DashboardFilters({
       <div className="flex flex-col">
         <label className="text-sm text-gray-600">Category</label>
         <select
-          value={category}
-          onChange={(e) => setCategory(e.target.value)}
+          value={filters.category}
+          onChange={(e) => actions.setCategory(e.target.value)}
           className="border rounded p-2"
         >
           <option value="">All Categories</option>
@@ -111,7 +95,7 @@ export default function DashboardFilters({
 
       {/* Apply Button */}
       <button
-        onClick={handleApplyFilters}
+        onClick={actions.handleApplyFilters}
       
         className={`px-4 py-2 rounded text-white font-medium bg-primary `}
       >

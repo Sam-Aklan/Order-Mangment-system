@@ -1,7 +1,7 @@
 "use client";
 
-import { useRouter } from "next/navigation";
-import { ChangeEvent, useState } from "react";
+import {  useOrderFilters } from "@/lib/hooks/order/useOrderFilters";
+import { useEffect } from "react";
 
 export function OrderFilters({
   initialQuery,
@@ -14,43 +14,21 @@ export function OrderFilters({
   initialFromDate?: string;
   initialToDate?: string;
 }) {
-  const router = useRouter();
-  const [query, setQuery] = useState(initialQuery || "");
-  const [status, setStatus] = useState(initialStatus || "");
-  const [fromDate, setFromDate] = useState(initialFromDate || "");
-  const [toDate, setToDate] = useState(initialToDate || "");
-
-   const submitFilters = () => {
-    const params = new URLSearchParams();
-    if (query.trim() !== "") params.set("q", query);
-    if (status.trim() !== "") params.set("status", status);
-    if (fromDate.trim() !== "") params.set("fromDate", fromDate);
-    if (toDate.trim() !== "") params.set("toDate", toDate);
-
-    router.push(`/dashboard/order?${params.toString()}`);
-  };
-
- const searchHandler = (e:ChangeEvent<HTMLInputElement>)=>{
-    setQuery(e.target.value)
- } 
-
-const statusHandler = (e: ChangeEvent<HTMLSelectElement>)=>{
-    setStatus(e.target.value)
-} 
-
+  const {actions,filters,} =useOrderFilters({query:initialQuery,fromDate:initialFromDate,status:initialStatus,toDate:initialToDate})
+ 
   return (
     <div className="flex flex-wrap gap-4 mb-4 items-center">
       <input
         type="text"
         placeholder="Search by product or customer"
-        value={query}
-        onChange={searchHandler}
+        value={filters.query}
+        onChange={actions.setQuery}
         className="p-2 border rounded w-64"
       />
 
       <select
-        value={status}
-        onChange={statusHandler}
+        value={filters.status}
+        onChange={actions.setStatus}
         className="p-2 border rounded"
       >
         <option value="">All Statuses</option>
@@ -61,21 +39,21 @@ const statusHandler = (e: ChangeEvent<HTMLSelectElement>)=>{
 
         <input
         type="date"
-        value={fromDate}
-        onChange={(e) => setFromDate(e.target.value)}
+        value={filters.fromDate}
+        onChange={ actions.setFromDate}
         className="p-2 border rounded"
       />
 
       <input
         type="date"
-        value={toDate}
-        onChange={(e) => setToDate(e.target.value)}
+        value={filters.toDate}
+        onChange={ actions.setToDate}
         className="p-2 border rounded"
       />
 
       <button
         type="button"
-        onClick={submitFilters}
+        onClick={()=>actions.submitFilters('/dashboard/order')}
         className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
       >
         Apply
