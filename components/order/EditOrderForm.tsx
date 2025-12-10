@@ -90,13 +90,14 @@ console.log("order details", getOrderPayload())
 
       {/* Total */}
       <div className="text-right pt-4 font-semibold text-lg">
-        Total: ${total}
+        Total: ${total.toFixed(2)}
       </div>
 
       {/* Submit */}
       <Button
         type="submit"
         className=" w-fit px-4 py-2 mb-4"
+        disabled={isSubmitting}
       >
         Save Order
       </Button>

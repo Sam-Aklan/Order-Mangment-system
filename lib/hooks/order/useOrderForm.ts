@@ -156,15 +156,15 @@ export function useOrderForm({
 
     try {
 
-    //   startTransition(async () => {
+      startTransition(async () => {
       
-    //     await createOrder({
-    //       customerId: result.data.customerId,
-    //       products: result.data.products,
-    //       total: result.data.total,
-    //     });
+        await createOrder({
+          customerId: result.data.customerId,
+          products: result.data.products,
+          total: result.data.total,
+        });
      
-    // });
+    });
        clearOrder();
        router.push('/dashboard/order')
     } catch (err) {

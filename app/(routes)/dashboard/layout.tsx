@@ -15,25 +15,33 @@ type userType = {
 }|undefined
 
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
+  
   let user:userType =undefined
   try {
     const session = await auth.api.getSession({
     headers: await headers()
   });
 
-    if(!session) {
-    redirect("/sign-in"); 
+    if(session) {
+   
+    
+      user = {name:session.user.name,email:session.user.email}
   }
 
-  user = {name:session.user.name,email:session.user.email}
 
   } catch (error) {
-    throw new Error("not athurized")
+    // throw new Error("not athurized")
+    if(error instanceof Error){
+
+      console.log("error session",error.message)
+    }
   }
+
+if(!user)redirect('/sign-in')
+
   
-  
-  if(user !==undefined){
     return <>
+    
     <Navbar userEmail={user.email} userName={user.name}>
 
    </Navbar>
@@ -43,5 +51,5 @@ export default async function DashboardLayout({ children }: { children: React.Re
    </div>
    <Footer/>
     </>
-  }else return <p>not authorized</p>
+  
 }
