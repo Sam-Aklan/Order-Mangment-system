@@ -28,7 +28,7 @@ import {
   SelectValue
 } from "@/components/ui/select"
 import { FileUpload, FileUploadDropzone, FileUploadItem, FileUploadItemDelete, FileUploadItemMetadata, FileUploadItemPreview, FileUploadList, FileUploadTrigger } from "../ui/file-upload"
-import { useProductForm } from "@/lib/hooks/product/useTestForm"
+import { useProductForm } from "@/lib/hooks/product/useProductForm"
 
 
 

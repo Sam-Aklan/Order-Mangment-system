@@ -27,14 +27,14 @@ import {
   SelectTrigger,
   SelectValue
 } from "@/components/ui/select"
-import { FileUpload, FileUploadDropzone, FileUploadItem, FileUploadItemDelete, FileUploadItemMetadata, FileUploadItemPreview, FileUploadList, FileUploadTrigger } from "@/components/ui/file-upload"
-import { useProductForm } from "@/lib/hooks/product/useTestForm"
+import { FileUpload, FileUploadDropzone, FileUploadTrigger } from "@/components/ui/file-upload"
+import { useProductForm } from "@/lib/hooks/product/useProductForm"
 import { ProductEditType } from "@/lib/actions/products"
 import Image from "next/image"
 
 
 
-export default function TestEditForm(
+export default function ProductEditForm(
   { 
 
  product

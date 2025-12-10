@@ -1,8 +1,6 @@
 "use client";
 
-import { productType } from "@/lib/actions/products";
-import { customerType } from "@/lib/actions/customers";
-import { orderType, statusType, updateOrder } from "@/lib/actions/orders";
+import { orderType} from "@/lib/actions/orders";
 import ProductPickerModal from "./ProductPickerModal";
 import CustomerSelect from "./CustomerSelect";
 import ProductCard from "../product/ProductCard";;
@@ -12,17 +10,14 @@ import PendingStatus from "./PendingStatus";
 
 interface Props {
   order: orderType,
-  customers: customerType[];
-  products: productType[];
 }
 
 export default function EditOrderForm({ order }: Props) {
  
 
-const {actions,isSubmitting,selectedItems,showModal,status,total} = useEditOrderForm({order})
-const {removeProduct,handleSubmit,getOrderPayload,setStatus,setShowModal,setCustomer,setProductQuantity} = actions
+const {actions,isPending,selectedItems,showModal,status,total} = useEditOrderForm({order})
+const {removeProduct,handleSubmit,setStatus,setShowModal,setCustomer,setProductQuantity} = actions
 
-console.log("order details", getOrderPayload())
   return (
     <>
     
@@ -97,9 +92,9 @@ console.log("order details", getOrderPayload())
       <Button
         type="submit"
         className=" w-fit px-4 py-2 mb-4"
-        disabled={isSubmitting}
+        disabled={isPending}
       >
-        Save Order
+        {isPending?"submitting":"Save Order"}
       </Button>
     </form>
     {showModal && (

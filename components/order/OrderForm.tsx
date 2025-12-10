@@ -1,5 +1,4 @@
 "use client"
-import { customerType } from "@/lib/actions/customers";
 import { productType } from "@/lib/actions/products";
 import Modal from "../Modal";
 import { useOrderForm } from "@/lib/hooks/order/useOrderForm";
@@ -10,7 +9,6 @@ import { Button } from "../ui/button";
 
 type createOrderType = {
     products: productType[],
-    customers: customerType[],
     page:number,
     totalPages:number,
     searchParams: {
@@ -22,9 +20,9 @@ type createOrderType = {
     };
 }
 
-function ClientOrderForm({ products, customers,searchParams,page,totalPages}: createOrderType) {
+function ClientOrderForm({ products, searchParams,page,totalPages}: createOrderType) {
   
-  const {selectedItems,previewOpen,error,isPending,isEmpty,total,actions} = useOrderForm({products,customers,searchParams,page,totalPages})
+  const {selectedItems,previewOpen,error,isPending,isEmpty,total,actions} = useOrderForm({searchParams})
 
   const {handleSubmission,setPreviewOpen,handlePageChange,handleQuantityChange,setCustomer,clearOrder,handlePageSizeChange, removeProduct, clearError } = actions
     return (

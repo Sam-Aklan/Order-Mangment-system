@@ -5,7 +5,6 @@ import { useForm, SubmitHandler } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { productSchema, ProductInput } from '@/lib/validations/productValidation';
 import { categoryType, productType } from '@/lib/actions/products';
-import { AppRouterInstance } from 'next/dist/shared/lib/app-router-context.shared-runtime';
 
 interface UseProductFormProps {
   onClose?: () => void;
@@ -13,40 +12,12 @@ interface UseProductFormProps {
   mode?: 'create' | 'edit';
 }
 
-interface UseProductFormReturn {
-  // Refs
-  fileInputRef: React.RefObject<HTMLInputElement|null>;
-  
-  // State
-  previewImage: string | null;
-  uploadProgress: number;
-  router:AppRouterInstance,
-  
-  // Form
-  formMethods: ReturnType<typeof useForm<ProductInput>>;
-  formValues: ProductInput;
-  
-  // Actions
-  actions: {
-    handleImageChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
-    removeImage: () => void;
-    onSubmit: SubmitHandler<ProductInput>;
-    uploadToCloudinary: (file: File) => Promise<{ url: string; publicId: string }>;
-    deleteFromCloudinary: (publicId: string) => Promise<void>;
-    createProduct: (data: ProductInput, imageData?: { url: string; publicId: string }) => Promise<void>;
-    updateProduct: (data: ProductInput, imageData?: { url: string; publicId: string }) => Promise<void>;
-    resetForm: () => void;
-  };
-  
-  // Computed
-  isEditMode: boolean;
-}
 
 export function useProductForm({ 
   onClose, 
   product, 
   mode = 'create' 
-}: UseProductFormProps){
+}: UseProductFormProps) {
   const router = useRouter();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -96,16 +67,16 @@ export function useProductForm({
         formValues.price !== product?.price?.toString() ||
         formValues.category !== product?.category ||
         formValues.stock !== product?.stock?.toString() ||
-        formValues.image !== null;
+        previewImage !== product.imageUrl;
       
       sethasChanged(changed);
     }
   }, [formValues, product, isEditMode]);
 
   // Image handling and other methods remain similar to basic version
- const handleImageChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      const file = e.target.files[0];
+ const handleImageChange = useCallback((files: File[]) => {
+    if (files && files[0]) {
+      const file = files[0];
       setValue("image", file);
       clearErrors("image");
 
@@ -122,16 +93,18 @@ export function useProductForm({
       reader.readAsDataURL(file);
 
       trigger("image");
+    } else{
+        setValue('image',undefined)
+        clearErrors('image')
     }
   }, [setValue, clearErrors, trigger, isEditMode, previewImage, product?.imageUrl]);
 
   const removeImage = useCallback(() => {
     setValue("image", null);
     setPreviewImage(null);
-    // if (fileInputRef.current) {
-    //   fileInputRef.current.value = "";
-    // }
-  }, [setValue, isEditMode, product]);
+    setDeleteImage(true)
+   
+  }, []);
 
   // Cloudinary methods remain the same
   const uploadToCloudinary = useCallback(async (file: File): Promise<{ url: string; publicId: string }> => {
@@ -244,7 +217,7 @@ export function useProductForm({
     }
 
     return response.json();
-  }, [product]);
+  }, [product,deleteImage]);
 
   // Form submission
   const onSubmit: SubmitHandler<ProductInput> = useCallback(async (data) => {
@@ -328,5 +301,6 @@ export function useProductForm({
       resetForm,
     },
     isEditMode,
+    isSubmitting:formIsSubmitting
   };
 }
