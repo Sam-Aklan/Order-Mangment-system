@@ -7,6 +7,7 @@ import ProductView from "./ProductView";
 import ConfirmModal from "../ConfirmModal";
 import Pagination from "../Pagination";
 import { useProductListManagement } from "@/lib/hooks/product/useProductsListManagement.ts";
+import { Button } from "../ui/button";
 
 interface productsListProps {
   products: productType[];
@@ -27,71 +28,21 @@ export default function ProductList({
   totalPages,
 }: productsListProps) {
 
-//   const router = useRouter();
-//   const [isModalOpen, setIsModalOpen] = useState(false);
-//   const [productToDelete, setProductToDelete] = useState<{name:string,id:string}|null>(null)
 
-//   const handlePageChange = (newPage: number) => {
-//     const params = new URLSearchParams();
-    
-//     // Preserve all existing filters
-//     if (searchParams.q) params.set("q", searchParams.q);
-//     if (searchParams.category) params.set("category", searchParams.category);
-//     if (searchParams.minPrice) params.set("minPrice", String(searchParams.minPrice));
-//     if (searchParams.maxPrice) params.set("maxPrice", String(searchParams.maxPrice));
-//     params.set("page", String(newPage));
-    
-//     router.push(`/dashboard/products?${params.toString()}
-// `);
-//   };
 
-//   const handlePageSizeChange = (newSize: number) => {
-//     const params = new URLSearchParams();
-
-//     // Reset to first page when changing size
-//     if (searchParams.q) params.set("q", searchParams.q);
-//     if (searchParams.category) params.set("category", searchParams.category);
-//     if (searchParams.minPrice) params.set("minPrice", String(searchParams.minPrice));
-//     if (searchParams.maxPrice) params.set("maxPrice", String(searchParams.maxPrice));
-
-//     params.set("page", "1");
-//     params.set("limit", String(newSize));
-
-//     router.push(`/dashboard/products?${params.toString()}`);
-//   };
-
-//  const handleProductDelete = useCallback(async (id:string) => {
- 
-//      try {
-//        const res = await fetch(`/api/product/`, {
-//          method: "DELETE",
-//          headers: { "Content-Type": "application/json" },
-//          body:JSON.stringify({productId:id})
-//        });
-//        const data = await res.json();
- 
-//        if (!res.ok) throw new Error(data.error || "Failed to delete product");
- 
-//        router.refresh();
-//      } catch (err) {
-//        console.error("Delete failed:", err);
-//        alert("Failed to delete product.");
-//      }
-//    },[]) 
-
-const {actions,currentPage,isDeleting,isModalOpen,pageSize,productToDelete} =useProductListManagement({searchParams})
+const {actions,isModalOpen,productToDelete} =useProductListManagement({searchParams})
 
   return (
-    <div className="p-6 space-y-4 w-full">
+    <div className="space-y-4 w-full">
       <div className="flex justify-between items-center">
 
-      <h1 className="text-2xl font-bold">Product List</h1>
-      <button
+      <h1 className="text-sm md:tex-lg lg:text-2xl font-bold">Product List</h1>
+      <Button
           onClick={() => actions.openModal()}
-          className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600"
+          className="px-2 py-1 w-fit text-xs"
         >
           Add Product
-        </button>
+        </Button>
       </div>
 
 
@@ -101,14 +52,11 @@ const {actions,currentPage,isDeleting,isModalOpen,pageSize,productToDelete} =use
         onClose={()=> actions.closeModal()}
         title="Create New Product">
 
-          <ProductForm 
-            onClose={() => actions.openModal()} 
-            // searchParams={searchParams}
-          />
+          <ProductForm onClose={actions.closeModal}/>
         </Modal>
       )}
 
-      <div className="border rounded p-4 space-y-2">
+      <div className="border rounded w-full p-2 space-y-2">
         {products.length === 0 && (
           <p className="text-gray-500">No products found.</p>
         )}

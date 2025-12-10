@@ -33,7 +33,7 @@ export default async function ProductsPage({searchParams}:ProductsPageProps){
     return (
         <main className="max-w-6xl flex items-center justify-center flex-col mx-auto p-6 space-y-4 text-black">
         <h1 className="text-2xl font-bold">Products</h1>
-        <ProductFilter currentPage={page} searchParams={{q,category,maxPrice,minPrice}} />
+        <ProductFilter searchParams={{q,category: category as categoryType,maxPrice,minPrice}} />
         <ProductList products={products} searchParams={{q,category,limit:offset,maxPrice:higherPrice,minPrice:lowerPrice,page}} totalPages={totalPages}/>
         
       </main>

@@ -1,92 +1,162 @@
 "use client"
 
-import { useProductFilters } from "@/lib/hooks/product/useProductFilters";
+import {
+  Button
+} from "@/components/ui/button"
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form"
+import {
+  Input
+} from "@/components/ui/input"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue
+} from "@/components/ui/select"
+import useWindowSize from "@/lib/hooks/useWindowSize"
+import FiltersDrawerMobile from "@/components/FiltersDrawerMobile"
+import { useProductFilters } from "@/lib/hooks/product/useProductFilters"
+import { categoryType } from "@/lib/actions/products"
 
-const ProductFilter = ({ currentPage, searchParams, basePath }: {
-  currentPage: number;
+interface ProductFiltersProps{
+  
   searchParams: {
     q?: string;
-    category?: string;
+    category?: categoryType;
     minPrice?: string;
     maxPrice?: string;
   };
   basePath?:string;
-}) => {
-  // const [name, setName] = useState(searchParams.q || "");
-  // const [category, setCategory] = useState(searchParams.category || "");
-  // const [minPrice, setMinPrice] = useState(searchParams.minPrice || "");
-  // const [maxPrice, setMaxPrice] = useState(searchParams.maxPrice || "");
-  // const router = useRouter();
+}
 
+export default function ProductFilters({searchParams,basePath}:ProductFiltersProps) {
 
-  // const submitFilters = () => {
-  //   const params = new URLSearchParams();
-    
-  //   if (name.trim() !== "") params.set("q", name.trim());
-  //   if (category.trim() !== "") params.set("category", category);
-  //   if (minPrice.trim() !== "") params.set("minPrice", minPrice);
-  //   if (maxPrice.trim() !== "") params.set("maxPrice", maxPrice);
-    
-  //   // Always reset to page 1 when filters change
-  //   params.set("page", "1");
-    
-  //   router.push(`/dashboard/products?${params.toString()}`);
-  // };
- const {filters,actions} = useProductFilters({basePath,initialName:searchParams.q,initialCategory:searchParams.category, initialMaxPrice:searchParams.maxPrice,initialMinPrice:searchParams.minPrice})
+  const {isMobile} = useWindowSize()
 
   return (
-    <div className="flex gap-2">
-      <div className="w-full grid grid-cols-1 md:grid-cols-4 gap-4">
-        <input
-          placeholder="Search name..."
-          className="border p-2 rounded"
-          value={filters.name}
-          onChange={actions.setName}
-        />
-        <select
-          value={filters.category}
-          onChange={actions.setCategory}
-          className="p-2 border rounded"
-        >
-          <option value="">All Categories</option>
-          <option value="ELECTRONICS">ELECTRONICS</option>
-          <option value="FOOD">Food</option>
-          <option value="BOOKS">Books</option>
-          <option value="FURNITURE">Furniture</option>
-          <option value="OTHER">Other</option>
-        </select>
-        <input
-          placeholder="Min price"
-          type="number"
-          className="border p-2 rounded"
-          value={filters.minPrice}
-          onChange={actions.setMinPrice}
-        />
-        <input
-          placeholder="Max price"
-          type="number"
-          className="border p-2 rounded"
-          value={filters.maxPrice}
-          onChange={actions.setMaxPrice}
-        />
-      </div>
-      {/* Action Buttons */}
-      <div className="flex justify-end gap-3 mt-4">
-        <button
-          onClick={actions.resetFilters}
-          className="px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-500 transition-colors"
-        >
-          Reset
-        </button>
-        <button
-          onClick={actions.submitFilters}
-          className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors"
-        >
-          Apply Filters
-        </button>
-      </div>
+    <div className="">
+      {
+        isMobile?<FiltersDrawerMobile drawerTitle=" ">
+            <FiltersForm searchParams={searchParams} basePath={basePath}/>
+        </FiltersDrawerMobile>:<FiltersForm searchParams={searchParams} basePath={basePath} />
+      }
     </div>
-  );
-};
+  )
+}
 
-export default ProductFilter;
+const FiltersForm = ({searchParams, basePath}:ProductFiltersProps)=>{
+   const {form,onSubmitHandler} =useProductFilters({basePath,initialCategory:searchParams.category,initialMaxPrice:searchParams.maxPrice, initialMinPrice:searchParams.minPrice,initialQuery:searchParams.q})
+
+    return(
+        <Form {...form}>
+      <form onSubmit={form.handleSubmit(onSubmitHandler)} className="w-full min-w-75 px-8 flex flex-col gap-2">
+        <div className="grid lg:grid-cols-4  md:grid-cols-2 grid-col-1 md:gap-y-4 gap-y-2 md:gap-x-1 lg:gap-x-4">
+
+        <FormField
+          control={form.control}
+          name="query"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Product name</FormLabel>
+              <FormControl>
+                <Input 
+                placeholder="product name"
+                
+                type=""
+                {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        
+        <FormField
+          control={form.control}
+          name="minPrice"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Min Price</FormLabel>
+              <FormControl>
+                <Input 
+                placeholder="min price"
+                
+                type=""
+                {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        
+        <FormField
+          control={form.control}
+          name="maxPrice"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Max Price</FormLabel>
+              <FormControl>
+                <Input 
+                placeholder="max price"
+                
+                type=""
+                {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        
+        <FormField
+          control={form.control}
+          name="category"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Category</FormLabel>
+              <Select onValueChange={field.onChange} defaultValue={field.value}>
+                <FormControl>
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="Select a category" />
+                  </SelectTrigger>
+                </FormControl>
+                <SelectContent>
+                  <SelectItem value="ELECTRONICS">ELECTRONICS</SelectItem>
+          <SelectItem value="FOOD">Food</SelectItem>
+          <SelectItem value="BOOKS">Books</SelectItem>
+          <SelectItem value="FURNITURE">Furniture</SelectItem>
+          <SelectItem value="OTHER">Other</SelectItem>
+                </SelectContent>
+              </Select>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        </div>
+        <div>
+          <div className=" w-full flex flex-col justify-center items-center md:flex-row gap-2">
+        <Button 
+        type="submit"
+        className="w-full md:w-fit"
+        >
+          Apply
+        </Button>
+          <Button 
+          variant={`secondary`}
+          onClick={()=> form.reset()}
+          className="w-full md:w-fit"
+          >
+            Rest
+          </Button>
+          </div>
+        </div>
+      </form>
+    </Form>
+    )
+}

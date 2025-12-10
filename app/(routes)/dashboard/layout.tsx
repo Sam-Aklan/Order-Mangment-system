@@ -1,8 +1,11 @@
 
+import Footer from "@/components/layout/Footer";
+import Navbar from "@/components/layout/Navbar";
 import { signOutAction } from "@/lib/actions/auth";
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
+// import '@/app/globals.css'
 
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
   const session = await auth.api.getSession({
@@ -14,22 +17,15 @@ export default async function DashboardLayout({ children }: { children: React.Re
     redirect("/sign-in"); 
   }
 
-
+const {email,name} = session.user
   return <>
-   <main className="max-w-md  flex items-center justify-center flex-col mx-auto p-6 space-y-4 text-white">
+   <Navbar userEmail={email} userName={name}>
 
-    <p className="text-black">Welcome, {session.user.name || "User"}!</p>
-    <p className="text-black">Email: {session.user.email}</p>
-    {/* <SignOutBtn/> */}
-    <form action={signOutAction}>
+   </Navbar>
+   <div className=" w-full">
 
-    <button
-    className="w-full bg-white text-black font-medium rounded-md px-4 py-2 transition-colors duration-300 hover:bg-gray-200">
-      Sign out
-    </button>
-    </form>
-        
-   </main>
   {children}
+   </div>
+   <Footer/>
   </>;
 }

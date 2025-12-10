@@ -1,24 +1,26 @@
-import SignInForm from "@/components/auth/SignInForm";
-import SignUpForm from "@/components/auth/SignUpForm";
+import { LoginForm } from "@/components/auth/LoginForm";
+import GeometryPattern from "@/components/layout/GeometryPattern";
 import type { Metadata } from "next";
-import { headers } from "next/headers";
 
 
 export const metadata: Metadata = {
-    title: "sign in",
+    title: "login page",
     description: "full stack order mangment app",
   };
 
 
 
-export default function SignInPage() {
+export default async function SignInPage() {
  
-
   return (
-    <main className="max-w-md h-screen flex items-center justify-center flex-col mx-auto p-6 space-y-4 text-white">
-      <h1 className="text-2xl font-bold text-black">Sign In</h1>
+    <main className="h-screen flex items-center justify-center flex-col mx-auto space-y-4 text-white w-full">
+      
 
-      <SignInForm/>
+      {/* <SignInForm/> */}
+      <GeometryPattern>
+
+      <LoginForm className="w-full max-w-75 md:max-w-100 absolute top-1/2 left-1/2 -translate-1/2"/>
+      </GeometryPattern>
       
     </main>
   );

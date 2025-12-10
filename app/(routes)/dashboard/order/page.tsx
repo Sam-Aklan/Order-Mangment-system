@@ -1,7 +1,10 @@
-import { OrderFilters } from "@/components/order/OrderFilters";
+
 import { OrdersList } from "@/components/order/OrderList";
+import OrderFilters from "@/components/order/OrderFilters";
+import { Button } from "@/components/ui/button";
 import { getOrders } from "@/lib/actions/orders";
 import { auth } from "@/lib/auth";
+import { PlusIcon } from "lucide-react";
 
 import type { Metadata } from "next";
 import { headers } from "next/headers";
@@ -33,14 +36,33 @@ const {q,status,fromDate,toDate} = await searchParams
 
 const {orders,} = await getOrders("ADMIN", session?.user.id,1,3,status as "PENDING"|"DELIVERED"|"SHIPPED"|undefined,q,fromDate,toDate)
  return (
-  <div className="max-w-4xl mx-auto mt-10">
-    <OrderFilters initialQuery={q ||""} initialStatus={status||""} initialFromDate={fromDate || ""} initialToDate={toDate || ""}/>
-    <div className="flex justify-between">
-    <h1 className="text-2xl font-bold mb-6">Orders</h1>
-  <Link href={'/dashboard/order/new'} className="w-fit h-fit px-4 py-2 text-white bg-black rounded-2xl transition-transform duration-200 hover:scale-95" type="button">
-  place order
-  </Link>
+  <div className="max-w-7xl mx-auto mt-10 p-2 md:p-4 relative">
+    <div className=" flex justify-between md:hidden">
+      <h1 className="text-2xl font-bold mb-6">Orders</h1>
+       <OrderFilters initialQuery={q ||""} initialStatus={status as "PENDING"| "SHIPPED"| "DELIVERED"|undefined} initialFromDate={fromDate || ""} initialToDate={toDate || ""}/>
+
     </div>
+    <div className="hidden md:block">
+
+    <OrderFilters initialQuery={q ||""} initialStatus={status as "PENDING"| "SHIPPED"| "DELIVERED"|undefined} initialFromDate={fromDate || ""} initialToDate={toDate || ""}/>
+    </div>
+
+    <div className="flex justify-between">
+    <h1 className="text-2xl font-bold mb-6 hidden md:block">Orders</h1>
+
+  <Link href={'/dashboard/order/new'} className="hidden md:block">
+  <Button variant={`default`} >
+    place order
+  </Button>
+  </Link>
+
+    </div>
+
+    <Link href={'/dashboard/order/new'} className="block md:hidden fixed bottom-2 right-2">
+  <Button variant={`default`} size={`icon`} className="rounded-full" >
+   <PlusIcon/>
+  </Button>
+  </Link>
       <OrdersList initialOrders={orders} searchParams={{q,status,fromDate,toDate}} userRole={session.user.role as "admin"|"user"}/>
     
     </div>

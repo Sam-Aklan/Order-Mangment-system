@@ -1,98 +1,71 @@
-import { useState, useCallback, ChangeEvent,} from 'react';
+import {   useMemo,} from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
+import { OrderFiltersSchema, OrderFiltersSchemaType } from '@/lib/validations/orderValidation';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { validDateString } from '@/lib/utils';
 
 interface UseOrderFilterProps{
   query?: string;
-  status?: string;
+  status?: "PENDING"| "SHIPPED"| "DELIVERED";
   fromDate?: string;
   toDate?: string;
 }
 
-interface UseOrderFilterReturn {
-  filters: UseOrderFilterProps;
-  actions: {
-    setQuery: (e:ChangeEvent<HTMLInputElement>) => void;
-    setStatus: (e: ChangeEvent<HTMLSelectElement>) => void;
-    setFromDate: (e:ChangeEvent<HTMLInputElement>) => void;
-    setToDate: (e:ChangeEvent<HTMLInputElement>) => void;
-    submitFilters: (basePath?: string) => void;
-    resetFilters: () => void;
-  };
-  currentSearchParams: UseOrderFilterProps;
-}
 
 export function useOrderFilters({
-  query: initialQuery = "",
-  status: initialStatus = "",
-  fromDate: initialFromDate = "",
-  toDate: initialToDate = "",
-}: UseOrderFilterProps = {}): UseOrderFilterReturn {
-  const [filters, setFilters] = useState<UseOrderFilterProps>({
-    query: initialQuery,
-    status: initialStatus,
-    fromDate: initialFromDate,
-    toDate: initialToDate,
-  });
-
+  query: initialQuery ,
+  status: initialStatus ,
+  fromDate: initialFromDate ,
+  toDate: initialToDate ,
+}: UseOrderFilterProps = {}){
+  
   const router = useRouter();
   const searchParams = useSearchParams();
 
   // Sync with URL search params
-  const currentSearchParams = {
-    query: searchParams.get('q') || '',
-    status: searchParams.get('status') || '',
-    fromDate: searchParams.get('fromDate') || '',
-    toDate: searchParams.get('toDate') || '',
-  };
+  const currentSearchParams =useMemo(()=>{return{
+    query: searchParams.get('q') || undefined,
+    status: searchParams.get('status') || undefined ,
+    fromDate: searchParams.get('fromDate') || undefined,
+    toDate: searchParams.get('toDate') || undefined,
+  }},[searchParams]) 
 
-  // Individual setters
-  const setQuery = (e:ChangeEvent<HTMLInputElement>) => {
-    setFilters(prev => ({ ...prev, query: e.target.value}));
-  };
+  const form = useForm <OrderFiltersSchemaType> ({
+      resolver: zodResolver(OrderFiltersSchema),
+      defaultValues: {
+        from: validDateString(initialFromDate),
+        to: validDateString(initialToDate),
+        query:initialQuery,
+        status:initialStatus,
+      },
+    })
 
-  const setStatus = (e: ChangeEvent<HTMLSelectElement>) => {
-    setFilters(prev => ({ ...prev, status: e.target.value }));
-  };
+ 
 
-  const setFromDate = (e:ChangeEvent<HTMLInputElement>) => {
-    setFilters(prev => ({ ...prev, fromDate: e.target.value }));
-  };
-
-  const setToDate = (e:ChangeEvent<HTMLInputElement>) => {
-    setFilters(prev => ({ ...prev, toDate: e.target.value }));
-  };
-
-  const submitFilters = useCallback((basePath: string = '/dashboard') => {
-    const params = new URLSearchParams();
+  function onSubmitFilters(values: OrderFiltersSchemaType ) {
+      try {
+        const isFiltersUpdated = values === form.formState.defaultValues
+        if(isFiltersUpdated) return
+       const params = new URLSearchParams();
+       const {from,query,status,to} = values
     
-    if (filters.query && filters.query.trim() !== "") params.set("q", filters.query);
-    if (filters.status && filters.status.trim() !== "") params.set("status", filters.status);
-    if (filters.fromDate && filters.fromDate.trim() !== "") params.set("fromDate", filters.fromDate);
-    if (filters.toDate && filters.toDate.trim() !== "") params.set("toDate", filters.toDate);
+    if (query && query.trim() !== "") params.set("q", query);
+    if (status && status.trim() !== "") params.set("status", status);
+    if (from) params.set("fromDate", from.toDateString());
+    if (to ) params.set("toDate", to.toDateString());
 
-    router.push(`${basePath}?${params.toString()}`);
-  }, [filters, router]);
+    router.push(`/dashboard/order?${params.toString()}`)
+        
+      } catch (error) {
+        console.error("Form submission error", error);
+        
+      }
+    }
 
-  const resetFilters = useCallback(() => {
-    setFilters({
-      query: "",
-      status: "",
-      fromDate: "",
-      toDate: "",
-    });
-    router.push('/dashboard'); // or whatever your base path is
-  }, [router]);
+
 
   return {
-    filters,
-    actions: {
-      setQuery,
-      setStatus,
-      setFromDate,
-      setToDate,
-      submitFilters,
-      resetFilters,
-    },
-    currentSearchParams,
+    form, onSubmitFilters
   };
 }

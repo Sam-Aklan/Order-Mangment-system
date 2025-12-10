@@ -23,11 +23,20 @@ category: z.enum(categories,{message:"choose vaild category"}).refine(cate=> cat
     .refine((file) => ["image/jpeg", "image/png", "image/webp"].includes(file.type), {
       message: "Only JPEG, PNG, or WEBP files are allowed",
     })
-    .refine((file) => file.size <= 2 * 1024 * 1024, {
-      message: "Image size must not exceed 2MB",
+    .refine((file) => file.size <= 1 * 1024 * 1024, {
+      message: "Image size must not exceed 1MB",
     })
     .nullable()
     .optional(),
 });
 
 export type ProductInput = z.infer<typeof productSchema>;
+
+export const formFiltersSchema = z.object({
+  query: z.string().optional(),
+  minPrice: z.string().refine(val=>!isNaN(Number(val)),{message:"enter a number not a text"}).optional(),
+  maxPrice: z.string().refine(val=>!isNaN(Number(val)),{message:"enter a number not a text"}).optional(),
+  category: z.enum(["ELECTRONICS","FOOD","BOOKS","FURNITURE","CLOTHING","OTHER"]).optional()
+});
+
+export type formFiltersSchemaType = z.infer<typeof formFiltersSchema>

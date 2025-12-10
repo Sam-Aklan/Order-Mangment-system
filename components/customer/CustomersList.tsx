@@ -1,13 +1,14 @@
 "use client";
 
 import { customerType } from "@/lib/actions/customers";
-import { useRouter } from "next/navigation";
-import { useState } from "react";
 import Modal from "../Modal";
-import CustomerView from "./CustomerView";
-import CustomerForm from "./CustomerForm";
+import CustomerView from "@/components/customer/CustomerView";
+import CustomerForm from "@/components/customer/CustomerForm";
 import Pagination from "../Pagination";
 import { useCustomerListManagement } from "@/lib/hooks/customer/useCustomerListManagement.ts";
+import { Button } from "../ui/button";
+import { Plus } from "lucide-react";
+import useWindowSize from "@/lib/hooks/useWindowSize";
 
 interface CustomerListProps {
   customers: customerType[];
@@ -20,36 +21,21 @@ export default function CustomerList({
   searchParams,
   totalPages,
 }: CustomerListProps) {
-  // const router = useRouter();
-  // const [isModalOpen, setIsModalOpen] = useState(false);
-
-  // const handlePageChange = (newPage: number) => {
-  //   const params = new URLSearchParams();
-  //   if (searchParams.q) params.set("q", searchParams.q);
-  //   params.set("page", String(newPage));
-
-  //   router.push(`/dashboard/customers?${params.toString()}`);
-  // };
-  // const handlePageSizeChange = (newSize: number) => {
-  //   const params = new URLSearchParams();
-  //   if (searchParams.q) params.set("q", searchParams.q);
-  //   params.set("page","1");
-  //   params.set("limit",String(newSize))
-  //   router.push(`/dashboard/customers?${params.toString()}`);
-  // };
-
+ 
   const {actions, isModalOpen, currentPage,currentPageSize} =useCustomerListManagement({searchParams})
+  const {isMobile} = useWindowSize()
 
   return (
-    <div className="p-6 space-y-4 w-full">
-      <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold">Customer List</h1>
-        <button
+    <div className="space-y-4 w-full relative">
+      <div className="flex justify-between items-center mt-2">
+        <h1 className="text-sm md:text-2xl font-bold">Customer List</h1>
+        <Button
           onClick={() => actions.openModal()}
-          className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600"
+          className="px-2 py-1 rounded-full fixed bottom-1/2 right-2 -translate-y-1/2 md:static md:translate-none md:w-fit md:px-2 md:py-1 md:rounded-sm"
+          size={`icon-sm`}
         >
-          Add Customer
-        </button>
+         {isMobile?<Plus/>:'Add Customer'}
+        </Button>
       </div>
 
       {isModalOpen && (
@@ -63,7 +49,7 @@ export default function CustomerList({
         </Modal>
       )}
 
-      <div className="border rounded p-4 space-y-2">
+      <div className="border rounded space-y-2">
         {customers.length === 0 && (
           <p className="text-gray-500">No customers found.</p>
         )}

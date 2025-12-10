@@ -46,7 +46,7 @@ export function useProductForm({
   onClose, 
   product, 
   mode = 'create' 
-}: UseProductFormProps): UseProductFormReturn {
+}: UseProductFormProps){
   const router = useRouter();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -127,10 +127,10 @@ export function useProductForm({
 
   const removeImage = useCallback(() => {
     setValue("image", null);
-    setPreviewImage(isEditMode ? product?.imageUrl || null : null);
-    if (fileInputRef.current) {
-      fileInputRef.current.value = "";
-    }
+    setPreviewImage(null);
+    // if (fileInputRef.current) {
+    //   fileInputRef.current.value = "";
+    // }
   }, [setValue, isEditMode, product]);
 
   // Cloudinary methods remain the same

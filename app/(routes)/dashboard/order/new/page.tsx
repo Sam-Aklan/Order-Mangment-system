@@ -34,8 +34,17 @@ export default async function CreateOrder({searchParams}:ordersPageProps) {
 
     return (
       <>
-      {/* <NewOrderFilters searchParams={{q,category,maxPrice,minPrice}} currentPage={page}/> */}
-      <ProductFilter basePath="/dashboard/order/new" currentPage={page} searchParams={{category,maxPrice,minPrice,q}}/>
+    
+      <div className="flex justify-between items-center md:hidden px-4 md:px-0">
+      <h2 className="text-sm font-semibold">Create Order</h2>
+      <ProductFilter searchParams={{category:category as categoryType,maxPrice,minPrice,q}}/>
+      </div>
+      {/* desktop view */}
+      <div className=" hidden md:block">
+       <h2 className="text-2xl font-semibold">Create Order</h2>
+      <ProductFilter searchParams={{category:category as categoryType,maxPrice,minPrice,q}}/>
+      </div>
+     
       <ClientOrderForm products={products} customers={customers}  searchParams={{q,category,maxPrice,minPrice,limit:offset}} page={page} totalPages={totalPages}/>
       </>
     )

@@ -1,5 +1,5 @@
-
-import { useRef, useState, useCallback, useEffect } from 'react';
+"use client"
+import { useState, useCallback, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { FieldErrors, SubmitHandler, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -14,13 +14,11 @@ interface UseCustomerFormProps {
 }
 
 interface UseCustomerFormReturn {
-  // Refs
-  fileInputRef: React.RefObject<HTMLInputElement|null>;
+  
   
   // State
   previewImage: string | null;
-  uploadProgress: number;
-  isSubmitting: boolean;
+  isSubmitting:boolean
   hasChanges: boolean;
   router: AppRouterInstance
   
@@ -31,7 +29,7 @@ interface UseCustomerFormReturn {
   
   // Actions
   actions: {
-    handleImageChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+    handleImageChange: (files:File[]) => void;
     removeImage: () => void;
     onSubmit: SubmitHandler<CustomerInput>;
    
@@ -48,11 +46,9 @@ export function useCustomerForm({
   mode = 'create' 
 }: UseCustomerFormProps): UseCustomerFormReturn {
   const router = useRouter();
-  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [previewImage, setPreviewImage] = useState<string | null>(null);
-  const [uploadProgress, setUploadProgress] = useState(0);
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  
   const [deleteImage, setDeleteImage] = useState(false);
   const [hasChanges, setHasChanges] = useState(false);
 
@@ -95,16 +91,15 @@ export function useCustomerForm({
     const hasFormChanged = 
       formValues.name !== defaultFormValues.name ||
       formValues.email !== defaultFormValues.email ||
-      formValues.image !== null ||
-      deleteImage;
+      formValues.image?.name !== customer?.imageUrl;
 
     setHasChanges(hasFormChanged);
   }, [formValues, defaultFormValues, deleteImage]);
 
   // Image handling
-  const handleImageChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      const file = e.target.files[0];
+  const handleImageChange = useCallback((files:File[]) => {
+    if (files && files[0]) {
+      const file = files[0];
       setValue("image", file);
       clearErrors("image");
 
@@ -133,9 +128,7 @@ export function useCustomerForm({
     }
     
     clearErrors("image");
-    if (fileInputRef.current) {
-      fileInputRef.current.value = "";
-    }
+
   }, [setValue, clearErrors, isEditMode]);
 
   // Cloudinary upload
@@ -241,7 +234,6 @@ export function useCustomerForm({
       return; // No changes, don't submit
     }
 
-    setIsSubmitting(true);
     
     let uploadedImageUrl: string | null = isEditMode ? customer?.imageUrl || null : null;
     let uploadedImagePublicId: string | null = isEditMode ? customer?.imagePublicId || null : null;
@@ -286,11 +278,8 @@ export function useCustomerForm({
         await rollbackImage(uploadedImagePublicId);
       }
 
-      // Show error to user
-      alert(error instanceof Error ? error.message : `Failed to ${isEditMode ? 'update' : 'create'} customer`);
-    } finally {
-      setIsSubmitting(false);
-    }
+     
+    } 
   }, [
     isEditMode,
     hasChanges,
@@ -305,18 +294,14 @@ export function useCustomerForm({
     reset(defaultFormValues);
     setPreviewImage(isEditMode ? customer?.imageUrl || null : null);
     setDeleteImage(false);
-    setUploadProgress(0);
-    if (fileInputRef.current) {
-      fileInputRef.current.value = "";
-    }
+    
+   
   }, [reset, defaultFormValues, isEditMode, customer]);
 
   return {
-    fileInputRef,
     previewImage,
-    uploadProgress,
     router,
-    isSubmitting: isSubmitting || formIsSubmitting,
+    isSubmitting:  formIsSubmitting,
     hasChanges,
     formMethods,
     formValues,

@@ -1,121 +1,101 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
-
-interface Customer {
-  id: string;
-  name: string;
-}
+import { useCustomerSelect } from "@/lib/hooks/customer/useCustomerSelect";
+import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover";
+import { Command, CommandGroup, CommandItem, CommandInput, CommandEmpty, CommandList } from "@/components/ui/command";
+import { Button } from "@/components/ui/button";
+import { Check, ChevronDown } from "lucide-react";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { cn } from "@/lib/utils";
 
 interface Props {
-  prevousiCustomer?: {id:string, name:string};
+  previousCustomer?: { id: string; name: string; image?: string };
   onChange: (id: string) => void;
 }
 
-export default function CustomerSelect({ prevousiCustomer, onChange }: Props) {
-  const [selectedCustomer, setSelectedCustomer] = useState(prevousiCustomer)
-  const [customers, setCustomers] = useState<Customer[]>(()=>selectedCustomer?[selectedCustomer]:[]);
-  const [search, setSearch] = useState("");
-  const [pageCursor, setPageCursor] = useState<string | null>(null);
-  const [hasMore, setHasMore] = useState(true);
-  const [open, setOpen] = useState(false);
-  const dropdownRef = useRef<HTMLDivElement>(null);
-  const listRef = useRef<HTMLDivElement>(null);
-  const [loading, setLoading] = useState(false);
+export default function CustomerSelect({ previousCustomer, onChange }: Props) {
+  const {
+    actions,
+    customers,
+    dropdownRef,
+    selectedCustomer,
+    loading,
+    listRef,
+    search,
+    open,
+  } = useCustomerSelect({ previousCustomer, onChange });
 
-  console.log("selected customer", customers)
-
-  const fetchCustomers = async (reset = false) => {
-    if (!hasMore && !reset) return;
-    setLoading(true);
-    const res = await fetch(
-      `/api/customers?q=${encodeURIComponent(search)}&limit=2${
-        reset ? "" : `&cursor=${pageCursor}`
-      }`
-    );
-    const data = await res.json();
-
-    setCustomers((prev) =>
-      // to keep the previous customer of the order visible
-      reset ? [selectedCustomer,...data.customers] : [...prev, ...data.customers]
-    );
-    setPageCursor(data.nextCursor);
-    setHasMore(Boolean(data.nextCursor));
-    setLoading(false);
-  };
-
-  useEffect(() => {
-    const timeout = setTimeout(() => {
-      setPageCursor(null);
-      setHasMore(true);
-      fetchCustomers(true);
-    }, 300);
-    return () => clearTimeout(timeout);
-  }, [search]);
-
-  const handleScroll = () => {
-    const el = listRef.current;
-    if (!el || loading || !hasMore) return;
-
-    if (el.scrollTop + el.clientHeight >= el.scrollHeight - 20) {
-      fetchCustomers();
-    }
-  };
-
-  useEffect(() => {
-    if (open) fetchCustomers(true);
-  }, [open]);
-
+  const { handleScroll, setOpen, setSearch, handleCustomerSelect } = actions;
   return (
-    <div className="relative" ref={dropdownRef}>
-     { selectedCustomer? <input type="hidden" name="customerId" value={selectedCustomer.id} />:undefined
-}
-      <button
-        type="button"
-        onClick={() => setOpen(open=>!open)}
-        className="w-full border rounded px-3 py-2 text-left"
-      >
-        {customers.find((c) => c.id === selectedCustomer?.id)?.name || "Select Customer"}
-      </button>
-
-      {open && (
-        <div className="absolute z-10 bg-white border rounded w-full mt-2 shadow">
-          <input
-            type="text"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search customers..."
-            className="w-full px-3 py-2 border-b"
-          />
-          <div
-            ref={listRef}
-            onScroll={handleScroll}
-            className="max-h-60 overflow-y-auto"
-          >
-            {customers.map((c) => (
-              <div
-                key={c.id}
-                onClick={() => {
-                  onChange(c.id);
-                  setOpen(false);
-                  setSelectedCustomer(c)
-                }}
-                className={`px-3 py-2 cursor-pointer hover:bg-gray-100 ${
-                  c.id === selectedCustomer?.id ? "bg-blue-100" : ""
-                }`}
-              >
-                {c.name}
-              </div>
-            ))}
-            {loading && (
-              <div className="p-2 text-sm text-gray-500">Loading...</div>
-            )}
-            {!loading && customers.length === 0 && (
-              <div className="p-2 text-sm text-gray-500">No results.</div>
-            )}
-          </div>
-        </div>
+    <div ref={dropdownRef} className="w-full">
+      {selectedCustomer && (
+        <input type="hidden" name="customerId" value={selectedCustomer.id} />
       )}
+
+      <Popover open={open} onOpenChange={setOpen}>
+        <PopoverTrigger asChild>
+          <Button
+            variant="outline"
+            role="combobox"
+            aria-expanded={open}
+            className="w-full justify-between"
+          >
+            {selectedCustomer
+              ? customers.find((c) => c.id === selectedCustomer.id)?.name
+              : "Select Customer"}
+            <ChevronDown className="ml-2 h-4 w-4 opacity-50" />
+          </Button>
+        </PopoverTrigger>
+
+        <PopoverContent className="w-full md:min-w-100 md:max-w-150 lg:min-w-200 lg:max-w-250 p-0">
+          <Command>
+            <CommandInput
+              placeholder="Search customers..."
+              value={search}
+              onInput={(e) => setSearch((e.target as HTMLInputElement).value)}
+            />
+
+            <CommandList ref={listRef} onScroll={handleScroll}>
+              {loading && (
+                <div className="p-3 text-sm text-muted-foreground">
+                  Loading...
+                </div>
+              )}
+
+              {!loading && customers.length === 0 && (
+                <CommandEmpty>No customers found.</CommandEmpty>
+              )}
+
+              <CommandGroup>
+                {customers.map((c) => (
+                  <CommandItem
+                    key={c.id}
+                    value={c.name}
+                    onSelect={() => handleCustomerSelect(c)}
+                    className="cursor-pointer flex items-center gap-3"
+                  >
+                    <Avatar>
+                      <AvatarImage src={c.imageUrl || ""} />
+                      <AvatarFallback>{c.name[0]}</AvatarFallback>
+                    </Avatar>
+
+                    <span>{c.name}</span>
+
+                    <Check
+                      className={cn(
+                        "ml-auto h-4 w-4",
+                        c.id === selectedCustomer?.id
+                          ? "opacity-100"
+                          : "opacity-0"
+                      )}
+                    />
+                  </CommandItem>
+                ))}
+              </CommandGroup>
+            </CommandList>
+          </Command>
+        </PopoverContent>
+      </Popover>
     </div>
   );
 }

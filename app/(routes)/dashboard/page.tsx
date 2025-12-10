@@ -41,9 +41,20 @@ export default async function DashboardPage({searchParams}:DashboardPageProps){
     const data: InsightResponse = await res.json()
    
     return (
-        <main className="w-full  flex items-center justify-center flex-col mx-auto p-6 space-y-4 text-black">
-        <h1 className="text-2xl font-bold">Dashboard</h1>
-        <DashboardFilters initialFrom={from} initialTo={to} initialGranularity={granularity}/>
+        <main className="w-full  flex items-center justify-center flex-col mx-auto p-1 md:p-6 space-y-4 text-black overflow-x-hidden">
+          {/* mobile view */}
+          <div className="w-full  h-fit flex justify-between md:hidden ">
+
+        <h1 className="text-lg md:text-2xl font-bold ">Dashboard</h1>
+       
+        <DashboardFilters/>
+          </div>
+          {/* desktop view */}
+          <div className="hidden md:block">
+
+          <h1 className="text-lg md:text-2xl font-bold  ">Dashboard</h1>
+        <DashboardFilters initialFrom={from} initialTo={to} initialGranularity={granularity} initialCategory={category} initialStatus={status}/>
+          </div>
         <DashboardClient initailData={data} />
       </main>
       );

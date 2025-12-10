@@ -1,112 +1,64 @@
-// hooks/useProductFilters.ts
-import { useState, useCallback, ChangeEvent } from 'react';
+"use client"
 import { useRouter } from 'next/navigation';
+import { formFiltersSchema, formFiltersSchemaType } from '@/lib/validations/productValidation';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { categoryType } from '@/lib/actions/products';
 
-interface ProductFilterState {
-  name: string;
-  category: string;
-  minPrice: string;
-  maxPrice: string;
-}
 
 interface UseProductFiltersProps {
-  initialName?: string;
-  initialCategory?: string;
+  initialQuery?: string;
+  initialCategory?: categoryType;
   initialMinPrice?: string;
   initialMaxPrice?: string;
   basePath?: string;
 }
 
-interface UseProductFiltersReturn {
-  filters: ProductFilterState;
-  actions: {
-    setName: (e:ChangeEvent<HTMLInputElement>) => void;
-    setCategory: (e:ChangeEvent<HTMLSelectElement>) => void;
-    setMinPrice: (e:ChangeEvent<HTMLInputElement>) => void;
-    setMaxPrice: (e:ChangeEvent<HTMLInputElement>) => void;
-    submitFilters: () => void;
-    resetFilters: () => void;
-    updateAllFilters: (filters: Partial<ProductFilterState>) => void;
-  };
-}
+
 
 export function useProductFilters({
-  initialName = "",
-  initialCategory = "",
-  initialMinPrice = "",
-  initialMaxPrice = "",
-  basePath ="/dashboard/products"
-}: UseProductFiltersProps = {}): UseProductFiltersReturn {
-  const [filters, setFilters] = useState<ProductFilterState>({
-    name: initialName,
-    category: initialCategory,
-    minPrice: initialMinPrice,
-    maxPrice: initialMaxPrice,
-  });
-
-  const router = useRouter();
-
-  // Individual setters
-  const setName = useCallback((e:ChangeEvent<HTMLInputElement>) => {
-    setFilters(prev => ({ ...prev, name: e.target.value }));
-  }, []);
-
-  const setCategory = useCallback((e:ChangeEvent<HTMLSelectElement>) => {
-    setFilters(prev => ({ ...prev, category: e.target.value }));
-  }, []);
-
-  const setMinPrice = useCallback((e:ChangeEvent<HTMLInputElement>) => {
-    setFilters(prev => ({ ...prev, minPrice: e.target.value }));
-  }, []);
-
-  const setMaxPrice = useCallback((e:ChangeEvent<HTMLInputElement>) => {
-    setFilters(prev => ({ ...prev, maxPrice: e.target.value }));
-  }, []);
-
-  // Update multiple filters at once
-  const updateAllFilters = useCallback((newFilters: Partial<ProductFilterState>) => {
-    setFilters(prev => ({ ...prev, ...newFilters }));
-  }, []);
-
-  // Submit filters
-  const submitFilters = useCallback(() => {
-   
-
-    const params = new URLSearchParams();
+  initialQuery,
+  initialCategory,
+  initialMinPrice,
+  initialMaxPrice,
+  basePath ="/dashboard/order/new"
+}: UseProductFiltersProps = {}){
+  
+     const router = useRouter()
+        const form = useForm < formFiltersSchemaType> ({
+        resolver: zodResolver(formFiltersSchema),
+        defaultValues:{
+            category:initialCategory,
+            maxPrice:initialMaxPrice || '0',
+            minPrice:initialMinPrice || '0',
+            query:initialQuery || ''
+        }
+      })
     
-    if (filters.name.trim() !== "") params.set("q", filters.name.trim());
-    if (filters.category.trim() !== "") params.set("category", filters.category);
-    if (filters.minPrice.trim() !== "") params.set("minPrice", filters.minPrice);
-    if (filters.maxPrice.trim() !== "") params.set("maxPrice", filters.maxPrice);
+      function onSubmitHandler(values: formFiltersSchemaType ) {
+        try {
+            const {category,maxPrice,minPrice,query} = values
+          const params = new URLSearchParams();
+        
+        if (query  && query.trim()!=='') params.set("q", query.trim());
+        if (category) params.set("category", category);
+        if (minPrice && minPrice.trim() !=='0' ) params.set("minPrice", minPrice.trim());
+        if (maxPrice && maxPrice.trim() !=='0') params.set("maxPrice", maxPrice.trim());
+        
+        // Reset to page 1 when filters change (default behavior)
+        
+          params.set("page", "1");
+       
+        
+        router.push(`${basePath}?${params.toString()}`);
     
-    // Reset to page 1 when filters change (default behavior)
-    
-      params.set("page", "1");
-   
-    
-    router.push(`${basePath}?${params.toString()}`);
-  }, [filters, router]);
-
-  // Reset all filters
-  const resetFilters = useCallback(() => {
-    setFilters({
-      name: "",
-      category: "",
-      minPrice: "",
-      maxPrice: "",
-    });
-  }, []);
+         
+        } catch (error) {
+          console.error("Form submission error", error);
+        }
+      }
 
   return {
-    filters,
-    actions: {
-      setName,
-      setCategory,
-      setMinPrice,
-      setMaxPrice,
-      submitFilters,
-      resetFilters,
-      updateAllFilters,
-    },
+    form, onSubmitHandler
   };
 }

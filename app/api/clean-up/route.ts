@@ -13,7 +13,7 @@ export async function GET(request: Request) {
     const { count } = await prisma.session.deleteMany({
       where: {
         expiresAt: {
-          gte:now, // `lt` stands for "less than"
+          lte:now, // `lt` stands for "less than"
         },
       },
     });
