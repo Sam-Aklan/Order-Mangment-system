@@ -154,20 +154,25 @@ export function useOrderForm({
       return; // validation already failed above
     }
 
-    startTransition(async () => {
-      try {
-        await createOrder({
-          customerId: result.data.customerId,
-          products: result.data.products,
-          total: result.data.total,
-        });
-        
-        clearOrder();
-        // Optionally redirect or show success message
-      } catch (err) {
-        setError(err instanceof Error ? err.message : 'Failed to create order');
-      }
-    });
+    try {
+
+    //   startTransition(async () => {
+      
+    //     await createOrder({
+    //       customerId: result.data.customerId,
+    //       products: result.data.products,
+    //       total: result.data.total,
+    //     });
+     
+    // });
+       clearOrder();
+       router.push('/dashboard/order')
+    } catch (err) {
+       setError(err instanceof Error ? err.message : 'Failed to create order');
+       clearOrder()
+    }
+
+    
   }, [validateOrder, getOrderPayload, clearOrder]);
 
   // Clear error

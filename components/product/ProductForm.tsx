@@ -46,7 +46,7 @@ export default function TestForm(
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 max-w-3xl mx-auto py-2 md:py-10 h-75 md:h-80 lg:h-full overflow-y-auto">
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 max-w-3xl mx-auto py-2 md:py-10 h-75 md:h-fit md:max-h-100 lg:h-full overflow-y-auto">
         
             <FormField
               control={form.control}

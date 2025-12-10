@@ -11,9 +11,10 @@ import { cn } from "@/lib/utils";
 interface Props {
   previousCustomer?: { id: string; name: string; image?: string };
   onChange: (id: string) => void;
+  clearError?:()=>void
 }
 
-export default function CustomerSelect({ previousCustomer, onChange }: Props) {
+export default function CustomerSelect({ previousCustomer, onChange,clearError }: Props) {
   const {
     actions,
     customers,
@@ -23,7 +24,7 @@ export default function CustomerSelect({ previousCustomer, onChange }: Props) {
     listRef,
     search,
     open,
-  } = useCustomerSelect({ previousCustomer, onChange });
+  } = useCustomerSelect({ previousCustomer, onChange,clearErrors:clearError });
 
   const { handleScroll, setOpen, setSearch, handleCustomerSelect } = actions;
   return (

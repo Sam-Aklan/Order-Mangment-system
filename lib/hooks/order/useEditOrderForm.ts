@@ -104,17 +104,6 @@ export function useEditOrderForm({
     removeStoreProduct(productId);
   }, [removeStoreProduct]);
 
-  // Add product to order
-//   const addProduct = useCallback((product: productType, quantity: number = 1) => {
-//     handleQuantityChange(
-//       product.id, 
-//       quantity, 
-//       product.stock, 
-//       product.price, 
-//       product.name, 
-//       product.category
-//     );
-//   }, [handleQuantityChange]);
 
   // Get order payload for submission
   const getOrderPayload = useCallback(() => {
@@ -140,7 +129,7 @@ export function useEditOrderForm({
 
   // Form submission
   const handleSubmit = useCallback(async (formData: FormData) => {
-    console.log("edit handle triggerd",)
+    
     if (!validateOrder()) {
       return;
     }

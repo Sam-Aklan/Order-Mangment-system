@@ -26,25 +26,13 @@ function ClientOrderForm({ products, customers,searchParams,page,totalPages}: cr
   
   const {selectedItems,previewOpen,error,isPending,isEmpty,total,actions} = useOrderForm({products,customers,searchParams,page,totalPages})
 
-  const {handleSubmission,setPreviewOpen,handlePageChange,handleQuantityChange,setCustomer,clearOrder,handlePageSizeChange, removeProduct } = actions
+  const {handleSubmission,setPreviewOpen,handlePageChange,handleQuantityChange,setCustomer,clearOrder,handlePageSizeChange, removeProduct, clearError } = actions
     return (
       <>
-      <div className="space-y-4 max-w-6xl mx-auto mt-10 px-4 md:px-0">
+      <div className="space-y-4 max-w-6xl mx-auto mt-10 px-4 ">
 
-        <CustomerSelect onChange={setCustomer} />
+        <CustomerSelect onChange={setCustomer} clearError={clearError} />
   
-        {/* <div>
-          <label className="block font-medium mb-1">Customer</label>
-          <select name="customerId" className="w-full border rounded p-2"
-          onChange={(e)=>setCustomer(e.target.value)}>
-            <option value="">Select customer...</option>
-            {customers.map((c) => (
-              <option key={c.id} value={c.id}>
-                {c.name} ({c.email})
-              </option>
-            ))}
-          </select>
-        </div> */}
   
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         {products.map((product) => {
@@ -128,6 +116,7 @@ function ClientOrderForm({ products, customers,searchParams,page,totalPages}: cr
             <Button
               onClick={handleSubmission}
               disabled={isPending}
+              type="button"
               className="px-3 py-1 w-fit disabled:opacity-50"
             >
               {isPending ? "Submitting..." : "Confirm Order"}
@@ -135,8 +124,9 @@ function ClientOrderForm({ products, customers,searchParams,page,totalPages}: cr
           </div>
       </Modal>
       </div>
-      <div className="my-8">
+      <div className="my-8 px-4">
 
+        
       <Pagination
       currentPage={page}
       onPageChange={handlePageChange}
