@@ -7,8 +7,7 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
-  url      = env("DATABASE_URL")
+  provider = "postgresql"
 }
 
 model User {
@@ -67,19 +66,24 @@ model Account {
 }
 
 model Product {
-  id       String          @id @default(uuid())
-  name     String
-  price    Float
-  stock    Int
-  category ProductCategory @default(OTHER)
-  items    OrderItem[]
+  id            String          @id @default(uuid())
+  name          String
+  price         Float
+  stock         Int
+  imageUrl      String?
+  imagePublicId String?
+  category      ProductCategory @default(OTHER)
+  items         OrderItem[]
 }
 
 model Customer {
-  id     String  @id @default(uuid())
-  name   String
-  email  String  @unique
-  orders Order[]
+  id            String   @id @default(uuid())
+  name          String
+  email         String   @unique
+  imageUrl      String?
+  imagePublicId String?
+  createdAt     DateTime @default(now())
+  orders        Order[]
 }
 
 model Order {
