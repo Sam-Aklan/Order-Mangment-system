@@ -44,5 +44,4 @@ next-env.d.ts
 
 /generated/prisma
 
-# ignore tsx which starts with test_
-Test_*.tsx
+
