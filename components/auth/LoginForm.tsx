@@ -46,7 +46,7 @@ export function LoginForm({
             })
         
             if (res.error) {
-              console.log(res.error.message || "Something went wrong.");
+              console.log(res.error || "Something went wrong.");
             } else {
               router.push("/dashboard");
             }
