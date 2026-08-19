@@ -7,6 +7,8 @@ const withBundleAnalyzer = require('@next/bundle-analyzer')({
 
 const nextConfig: NextConfig = {
   /* config options here */
+  serverExternalPackages:['@prisma/client'],
+  
   images:{
     remotePatterns:[{
       protocol:"https",
